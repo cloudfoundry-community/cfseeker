@@ -4,10 +4,26 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/starkandwayne/goutils/log"
 	"github.com/thomasmmitchell/cfseeker/seeker"
 )
 
-func find(s *seeker.Seeker) (err error) {
+//FindOutput contains the return values from a call to Find()
+type FindOutput struct {
+	Instances []FindInstance `yaml:"instances"`
+	Count     int            `yaml:"count"`
+}
+
+//FindInstance represents information about one instance of an app
+type FindInstance struct {
+	InstanceNumber int    `yaml:"number"`
+	VMName         string `yaml:"vm_name"`
+	Host           string `yaml:"host"`
+}
+
+func find(s *seeker.Seeker) (output interface{}, err error) {
+	log.Debugf("Beginning evaluation of find command")
+	ret := FindOutput{}
 	err = validateFindFlags()
 	if err != nil {
 		return
@@ -16,17 +32,43 @@ func find(s *seeker.Seeker) (err error) {
 	var hosts []string
 
 	if appGUIDFind != nil && *appGUIDFind != "" {
+		log.Debugf("Finding IPs by GUID")
 		hosts, err = s.FindIPs(s.ByGUID(*appGUIDFind))
 	} else {
+		log.Debugf("Finding IPs by Org, Space, and App Name")
 		hosts, err = s.FindIPs(s.ByOrgSpaceAndName(*orgFind, *spaceFind, *appNameFind))
 	}
 
-	//TODO: Print more betterer
-	for _, host := range hosts {
-		fmt.Println(host)
+	if err != nil {
+		err = fmt.Errorf("Error while getting VM IPs: %s", err.Error())
+		return
 	}
-	//TODO: Go get vm name
 
+	log.Debugf("Got VM IPs")
+
+	for i, host := range hosts {
+		log.Debugf("Looking up VM with IP: %s", host)
+		var vm *seeker.VMInfo
+		vm, err = s.GetVMWithIP(host)
+
+		if err != nil {
+			err = fmt.Errorf("Error while translating VM name for IP `%s`: %s", host, err.Error())
+			return
+		}
+
+		log.Debugf("Got VM with IP: %s")
+
+		thisInstance := FindInstance{
+			InstanceNumber: i,
+			VMName:         fmt.Sprintf("%s/%d", vm.Name, vm.Index),
+			Host:           host,
+		}
+		ret.Instances = append(ret.Instances, thisInstance)
+	}
+
+	ret.Count = len(ret.Instances)
+
+	output = ret
 	return
 }
 
