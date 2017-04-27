@@ -8,15 +8,16 @@ type FindOutput struct {
 	Host   string
 }
 
-// FindIP takes the App GUID given and queries the CF API to get the IP address
-// of the VM on which the application is located, and returns that. If inputErr
-// is non-nil, the function will bail early with the given error.
-func (s *Seeker) FindIP(guid string, inputErr error) (ip string, err error) {
+// FindIPs takes the App GUID given and queries the CF API to get the IP
+// addresses of the VMs on which the instances of the application are located
+// and returns those. If inputErr is non-nil, the function will bail early with
+// the given error.
+func (s *Seeker) FindIPs(guid string, inputErr error) (ips []string, err error) {
 	if inputErr != nil {
-		return "", inputErr
+		return nil, inputErr
 	}
 
-	return s.getAppHost(guid)
+	return s.getAppHosts(guid)
 }
 
 // ByOrgSpaceAndName checks that the given variables are set, erroring if any
@@ -54,7 +55,7 @@ func (s *Seeker) getAppGUID(orgname, spacename, appname string) (guid string, er
 	return app.Guid, nil
 }
 
-func (s *Seeker) getAppHost(guid string) (ip string, err error) {
+func (s *Seeker) getAppHosts(guid string) (ips []string, err error) {
 	statsMap, err := s.client.GetAppStats(guid)
 	if err != nil {
 		err = fmt.Errorf("Error when getting stats for app with GUID `%s` (Is the app running?)", guid)
@@ -65,9 +66,8 @@ func (s *Seeker) getAppHost(guid string) (ip string, err error) {
 		return
 	}
 
-	//This loop should only have one iteration
 	for _, stats := range statsMap {
-		ip = stats.Stats.Host
+		ips = append(ips, stats.Stats.Host)
 	}
 	return
 }

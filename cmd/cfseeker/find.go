@@ -13,16 +13,18 @@ func find(s *seeker.Seeker) (err error) {
 		return
 	}
 
-	var host string
+	var hosts []string
 
 	if appGUIDFind != nil && *appGUIDFind != "" {
-		host, err = s.FindIP(s.ByGUID(*appGUIDFind))
+		hosts, err = s.FindIPs(s.ByGUID(*appGUIDFind))
 	} else {
-		host, err = s.FindIP(s.ByOrgSpaceAndName(*orgFind, *spaceFind, *appNameFind))
+		hosts, err = s.FindIPs(s.ByOrgSpaceAndName(*orgFind, *spaceFind, *appNameFind))
 	}
 
 	//TODO: Print more betterer
-	fmt.Println(host)
+	for _, host := range hosts {
+		fmt.Println(host)
+	}
 	//TODO: Go get vm name
 
 	return
