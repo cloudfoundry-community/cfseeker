@@ -56,7 +56,7 @@ func find(s *seeker.Seeker) (output interface{}, err error) {
 			return
 		}
 
-		log.Debugf("Got VM with IP: %s")
+		log.Debugf("Got VM with IP: %s", host)
 
 		thisInstance := FindInstance{
 			InstanceNumber: i,

@@ -71,7 +71,7 @@ func main() {
 		bailWith("Could not marshal output into YAML")
 	}
 
-	fmt.Println(userOutput)
+	fmt.Println(string(userOutput))
 }
 
 func initializeConfig() (*config.Config, error) {

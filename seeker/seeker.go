@@ -7,6 +7,7 @@ import (
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/gogobosh"
+	"github.com/starkandwayne/goutils/log"
 	"github.com/thomasmmitchell/cfseeker/config"
 )
 
@@ -28,15 +29,19 @@ func NewSeeker(conf *config.Config) (ret *Seeker, err error) {
 	ret = &Seeker{}
 	ret.config = conf
 
+	log.Debugf("Setting up CF Client")
 	ret.cf, err = ret.getCFClientFromConfig()
 	if err != nil {
 		return nil, fmt.Errorf("Error connecting to Cloud Foundry API: %s", err.Error())
 	}
+	log.Debugf("Done setting up CF Client")
 
+	log.Debugf("Setting up BOSH Client")
 	ret.bosh, err = ret.getBOSHClientFromConfig()
 	if err != nil {
 		return nil, fmt.Errorf("Error connecting to BOSH API: %s", err.Error())
 	}
+	log.Debugf("Done setting up BOSH Client")
 
 	ret.vmdata = map[string]VMInfo{}
 	return

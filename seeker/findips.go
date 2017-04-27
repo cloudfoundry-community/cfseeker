@@ -3,6 +3,8 @@ package seeker
 import (
 	"fmt"
 	"net"
+
+	"github.com/starkandwayne/goutils/log"
 )
 
 // FindIPs takes the App GUID given and queries the CF API to get the IP
@@ -32,18 +34,21 @@ func (s *Seeker) ByGUID(appGUID string) (string, error) {
 //getAppGUID performs lookups against the CF API to convert org, space, and app
 // names into the target app GUID
 func (s *Seeker) getAppGUID(orgname, spacename, appname string) (guid string, err error) {
+	log.Debugf("Getting org by name (%s) from CF API", orgname)
 	org, err := s.cf.GetOrgByName(orgname)
 	if err != nil {
 		err = fmt.Errorf("While looking up given org: %s", err.Error())
 		return
 	}
 
+	log.Debugf("Getting space by name (%s) and org GUID (%s) from CF API", spacename, org.Guid)
 	space, err := s.cf.GetSpaceByName(spacename, org.Guid)
 	if err != nil {
 		err = fmt.Errorf("While looking up given space: %s", err.Error())
 		return
 	}
 
+	log.Debugf("Getting app by name (%s), space GUID (%s), and org GUID (%s) from CF API", appname, space.Guid, org.Guid)
 	app, err := s.cf.AppByName(appname, space.Guid, org.Guid)
 	if err != nil {
 		err = fmt.Errorf("While looking up given app: %s", err.Error())
@@ -53,6 +58,7 @@ func (s *Seeker) getAppGUID(orgname, spacename, appname string) (guid string, er
 }
 
 func (s *Seeker) getAppHosts(guid string) (ips []string, err error) {
+	log.Debugf("Getting application stats for app with GUID %s from CF API", guid)
 	statsMap, err := s.cf.GetAppStats(guid)
 	if err != nil {
 		err = fmt.Errorf("Error when getting stats for app with GUID `%s` (Is the app running?)", guid)
