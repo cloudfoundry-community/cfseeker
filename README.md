@@ -28,3 +28,8 @@ bosh:
   - deployment-name-1
   - deployment-name-2
 ```
+
+## Running the Application
+You can build it if you want - grab your favority `go` distribution and build the files in the `cmd/cfseeker` directory. But let's be serious - you don't want to build it - head over to the releases page and there are binaries provided for you, free of charge.
+
+Currently, the only supported command is `cfseeker find`. For more information on that, you can run `cfseeker help find`. You can also just run the `help` command for all the information you could ever want, or use the `--help` flag (you should also be able to use `-h`, but I made a mistake and that doesn't work in v0.1.0 _soooo_ next release).
