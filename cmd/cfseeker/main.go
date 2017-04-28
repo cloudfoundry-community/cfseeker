@@ -35,9 +35,9 @@ var (
 type commandFn func(*seeker.Seeker) (interface{}, error)
 
 func main() {
-	command := kingpin.MustParse(cmdLine.Parse(os.Args[1:]))
 	cmdLine.HelpFlag.Short('h')
 	cmdLine.VersionFlag.Short('v')
+	command := kingpin.MustParse(cmdLine.Parse(os.Args[1:]))
 	conf, err := initializeConfig()
 	if err != nil {
 		bailWith(err.Error())
