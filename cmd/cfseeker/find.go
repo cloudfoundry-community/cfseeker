@@ -56,6 +56,12 @@ func find(s *seeker.Seeker) (output interface{}, err error) {
 			return
 		}
 
+		if vm == nil {
+			//TODO: Don't error out, have alternate branch for no name resolution #resiliency
+			err = fmt.Errorf("Could not find VM with given IP")
+			return
+		}
+
 		log.Debugf("Got VM with IP: %s", host)
 
 		thisInstance := FindInstance{

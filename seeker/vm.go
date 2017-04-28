@@ -15,6 +15,9 @@ type VMInfo struct {
 }
 
 // GetVMWithIP searches the BOSH director for the VM with the IP you've given
+// An error is returned if a problem is encountered while contacting the BOSH
+// director. If the VM simply could not be found in the configured deployments,
+// no error is returned, but vm will be nil.
 func (s *Seeker) GetVMWithIP(ip string) (vm *VMInfo, err error) {
 	log.Debugf("Getting VM with IP (%s)", ip)
 	ip, err = canonizeIP(ip)
@@ -37,13 +40,13 @@ func (s *Seeker) GetVMWithIP(ip string) (vm *VMInfo, err error) {
 		return
 	}
 
-	log.Debugf("Checking for VM with IP (%s) after fetching data")
+	log.Debugf("Checking for VM with IP (%s) after fetching data", ip)
 	tmpVM, found = s.vmdata[ip]
 	if found {
 		log.Debugf("Found VM with IP (%s) after fetching", ip)
 		vm = &tmpVM
 	} else {
-		log.Debugf("Could not find VM with IP (%s)")
+		log.Debugf("Could not find VM with IP (%s)", ip)
 	}
 	return
 }
@@ -93,6 +96,8 @@ func (s *Seeker) cacheUntil(ip string) (err error) {
 			}
 		}
 		log.Debugf("Cached %d VMs", len(vms))
+		//Mark that we cached this deployment
+		s.cachedDeps = append(s.cachedDeps, depName)
 		//Bail out if we got our target ip
 		if _, found := s.vmdata[ip]; found {
 			log.Debugf("Found target IP (%s) in deployment (%s)", ip, depName)
