@@ -95,7 +95,7 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 
 func validateFindFlags(in FindInput) error {
 	//Check GUID flags
-	if in.AppName != "" {
+	if in.AppGUID != "" {
 		return nil
 	}
 
