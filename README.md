@@ -28,6 +28,14 @@ bosh:
   deployments:
   - deployment-name-1
   - deployment-name-2
+# server and its subkeys are only necessary if you're running in server mode
+server:
+  # basic auth creds if you want basic auth.
+  basic_auth:
+    username: admin
+    password: password
+  #no_auth: true  <set this to true and don't give basic auth creds if you want no auth
+  port: 8892
 ```
 
 ## Running the Application
