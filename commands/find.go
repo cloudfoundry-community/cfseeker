@@ -19,17 +19,17 @@ type FindInput struct {
 
 //FindOutput contains the return values from a call to Find()
 type FindOutput struct {
-	AppGUID   string         `yaml:"app_guid"`
-	Instances []FindInstance `yaml:"instances"`
-	Count     int            `yaml:"count"`
+	AppGUID   string         `yaml:"app_guid" json:"app_guid"`
+	Instances []FindInstance `yaml:"instances" json:"instances"`
+	Count     int            `yaml:"count" json:"count"`
 }
 
 //FindInstance represents information about one instance of an app
 type FindInstance struct {
-	InstanceNumber int    `yaml:"number"`
-	VMName         string `yaml:"vm_name"`
-	Host           string `yaml:"host"`
-	Port           int    `yaml:"port"`
+	InstanceNumber int    `yaml:"number" json:"number"`
+	VMName         string `yaml:"vm_name" json:"vm_name"`
+	Host           string `yaml:"host" json:"host"`
+	Port           int    `yaml:"port" json:"port"`
 }
 
 //Find determines the location of the app you requests
