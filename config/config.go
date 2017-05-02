@@ -2,8 +2,9 @@ package config
 
 //Config contains all the information needed for the seeker backend to operate
 type Config struct {
-	CF   CFConfig   `yaml:"cf"`
-	BOSH BOSHConfig `yaml:"bosh"`
+	CF     CFConfig     `yaml:"cf"`
+	BOSH   BOSHConfig   `yaml:"bosh"`
+	Server ServerConfig `yaml:"server"`
 }
 
 //CFConfig contains location and authorization info about a target Cloud Foundry
@@ -21,4 +22,17 @@ type BOSHConfig struct {
 	Password          string   `yaml:"password"`
 	SkipSSLValidation bool     `yaml:"skip_ssl_validation"`
 	Deployments       []string `yaml:"deployments"`
+}
+
+//ServerConfig has the info needed specifically for running in server mode
+type ServerConfig struct {
+	BasicAuth BasicAuthConfig `yaml:"basic_auth"`
+	Port      int             `yaml:"port"`
+	NoAuth    bool            `yaml:"no_auth"`
+}
+
+//BasicAuthConfig lets you set up basic auth for your API
+type BasicAuthConfig struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }

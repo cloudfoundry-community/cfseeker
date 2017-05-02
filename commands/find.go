@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -7,6 +7,15 @@ import (
 	"github.com/starkandwayne/goutils/log"
 	"github.com/thomasmmitchell/cfseeker/seeker"
 )
+
+//FindInput contains the information required to perform the find command
+// Either should be the org, space, and app names, or just the app GUID
+type FindInput struct {
+	AppGUID   string
+	OrgName   string
+	SpaceName string
+	AppName   string
+}
 
 //FindOutput contains the return values from a call to Find()
 type FindOutput struct {
@@ -21,22 +30,23 @@ type FindInstance struct {
 	Host           string `yaml:"host"`
 }
 
-func find(s *seeker.Seeker) (output interface{}, err error) {
+//Find determines the location of the app you requests
+func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 	log.Debugf("Beginning evaluation of find command")
 	ret := FindOutput{}
-	err = validateFindFlags()
+	err = validateFindFlags(in)
 	if err != nil {
 		return
 	}
 
 	var hosts []string
 
-	if appGUIDFind != nil && *appGUIDFind != "" {
+	if in.AppGUID != "" {
 		log.Debugf("Finding IPs by GUID")
-		hosts, err = s.FindIPs(s.ByGUID(*appGUIDFind))
+		hosts, err = s.FindIPs(s.ByGUID(in.AppGUID))
 	} else {
 		log.Debugf("Finding IPs by Org, Space, and App Name")
-		hosts, err = s.FindIPs(s.ByOrgSpaceAndName(*orgFind, *spaceFind, *appNameFind))
+		hosts, err = s.FindIPs(s.ByOrgSpaceAndName(in.OrgName, in.SpaceName, in.AppName))
 	}
 
 	if err != nil {
@@ -78,27 +88,27 @@ func find(s *seeker.Seeker) (output interface{}, err error) {
 	return
 }
 
-func validateFindFlags() error {
+func validateFindFlags(in FindInput) error {
 	//Check GUID flags
-	if appGUIDFind != nil && *appGUIDFind != "" {
+	if in.AppName != "" {
 		return nil
 	}
 
 	var errorMessages []string
 	//Otherwise, check org space name flags
-	if orgFind == nil || *orgFind == "" {
-		errorMessages = append(errorMessages, "No org name specified")
+	if in.OrgName == "" {
+		errorMessages = append(errorMessages, "no org name specified")
 	}
-	if spaceFind == nil || *spaceFind == "" {
-		errorMessages = append(errorMessages, "No space name specified")
+	if in.SpaceName == "" {
+		errorMessages = append(errorMessages, "no space name specified")
 	}
-	if appNameFind == nil || *appNameFind == "" {
-		errorMessages = append(errorMessages, "No app name specified")
+	if in.AppName == "" {
+		errorMessages = append(errorMessages, "no app name specified")
 	}
 
 	if len(errorMessages) == 0 {
 		return nil
 	}
 
-	return fmt.Errorf(strings.Join(errorMessages, "\n"))
+	return inputErrorf(strings.Join(errorMessages, "\n"))
 }

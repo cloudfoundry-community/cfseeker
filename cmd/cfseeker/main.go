@@ -7,8 +7,8 @@ import (
 
 	"github.com/starkandwayne/goutils/ansi"
 	"github.com/starkandwayne/goutils/log"
+	"github.com/thomasmmitchell/cfseeker/commands"
 	"github.com/thomasmmitchell/cfseeker/config"
-	"github.com/thomasmmitchell/cfseeker/seeker"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 	yaml "gopkg.in/yaml.v2"
@@ -25,41 +25,50 @@ var (
 	orgFind     = findCom.Flag("org", "The organization where the app is pushed").Short('o').String()
 	spaceFind   = findCom.Flag("space", "The space within the given org where the app is pushed").Short('s').String()
 	appNameFind = findCom.Flag("app", "The name of the app to look up").Short('a').String()
-	appGUIDFind = findCom.Flag("appGUID", "The GUID assigned to the app to look up").Short('g').String()
+	appGUIDFind = findCom.Flag("app-guid", "The GUID assigned to the app to look up").Short('g').String()
 
+	//SERVER
+	serverCom    = cmdLine.Command("server", "Run cfseeker in server mode")
+	cfModeServer = cmdLine.Flag("cf", "Override port in config to use PORT environment variable").Bool()
 	// //LIST
 	// listCom = cmdLine.Command("list", "List all the apps on a given BOSH VM")
 	// vmList  = listCom.Flag("vm", "The vm name to list instances for (<jobname>/<index>)").Required().String()
+	conf *config.Config
 )
-
-type commandFn func(*seeker.Seeker) (interface{}, error)
 
 func main() {
 	cmdLine.HelpFlag.Short('h')
 	cmdLine.VersionFlag.Short('v')
+
 	command := kingpin.MustParse(cmdLine.Parse(os.Args[1:]))
-	conf, err := initializeConfig()
+
+	var err error
+	conf, err = initializeConfig()
 	if err != nil {
 		bailWith(err.Error())
 	}
 
 	setupLogging()
 
-	s, err := seeker.NewSeeker(conf)
-	if err != nil {
-		bailWith(err.Error())
-	}
-
 	var toRun commandFn
+	var toInput interface{}
 
 	switch command {
 	case "find":
-		toRun = find
-		// case "list":
+		toRun = findCommand
+		toInput = commands.FindInput{
+			AppGUID:   *appGUIDFind,
+			OrgName:   *orgFind,
+			SpaceName: *spaceFind,
+			AppName:   *appNameFind,
+		}
+	case "server":
+		toRun = serverCommand
+		toInput = serverInput{conf: conf}
 	}
 
 	log.Debugf("Dispatching to user command")
-	cmdOut, err := toRun(s)
+	cmdOut, err := toRun(toInput)
 	if err != nil {
 		bailWith(err.Error())
 	}
