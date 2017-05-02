@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,6 +20,7 @@ var (
 	//Global flags
 	configPath = cmdLine.Flag("config", "Path to a config file to load").Short('c').Default("./seekerconf.yml").Envar("SEEKERCONF").String()
 	debugFlag  = cmdLine.Flag("debug", "Turn debug output on").Short('d').Bool()
+	jsonFlag   = cmdLine.Flag("json", "Give output in JSON instead of YAML").Short('j').Bool()
 
 	//FIND
 	findCom     = cmdLine.Command("find", "Get the location of an app")
@@ -75,7 +77,13 @@ func main() {
 
 	log.Debugf("Done with user command")
 
-	userOutput, err := yaml.Marshal(cmdOut)
+	var userOutput []byte
+
+	if *jsonFlag {
+		userOutput, err = json.Marshal(cmdOut)
+	} else {
+		userOutput, err = yaml.Marshal(cmdOut)
+	}
 	if err != nil {
 		bailWith("Could not marshal output into YAML")
 	}
