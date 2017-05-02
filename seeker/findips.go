@@ -7,6 +7,13 @@ import (
 	"github.com/starkandwayne/goutils/log"
 )
 
+// AppMeta has information about the pushed application itself, universal to
+// all its instances
+type AppMeta struct {
+	Name string
+	GUID string
+}
+
 //AppInstance has information from the CF API about an application
 type AppInstance struct {
 	Host string
@@ -17,12 +24,37 @@ type AppInstance struct {
 // addresses of the VMs and listening ports on which the instances of the
 // application are located and returns those. If inputErr is non-nil, the
 // function will bail early with the given error.
-func (s *Seeker) FindInstances(guid string, inputErr error) (inst []AppInstance, err error) {
+func (s *Seeker) FindInstances(guid string, inputErr error) (meta *AppMeta, inst []AppInstance, err error) {
 	if inputErr != nil {
-		return nil, inputErr
+		return nil, nil, inputErr
 	}
 
-	return s.getAppHosts(guid)
+	meta = &AppMeta{}
+
+	log.Debugf("Getting application stats for app with GUID %s from CF API", guid)
+	statsMap, err := s.cf.GetAppStats(guid)
+	if err != nil {
+		err = fmt.Errorf("Error when getting stats for app with GUID `%s` (Is the app running?)", guid)
+		return
+	}
+	if len(statsMap) == 0 {
+		err = fmt.Errorf("No stats found for app with GUID `%s`", guid)
+		return
+	}
+
+	meta.GUID = guid
+
+	for _, stats := range statsMap {
+		stats.Stats.Host, err = canonizeIP(stats.Stats.Host)
+		if err != nil {
+			return
+		}
+		inst = append(inst, AppInstance{Host: stats.Stats.Host, Port: stats.Stats.Port})
+
+		meta.Name = stats.Stats.Name
+	}
+
+	return
 }
 
 // ByOrgSpaceAndName checks that the given variables are set, erroring if any
@@ -61,28 +93,6 @@ func (s *Seeker) getAppGUID(orgname, spacename, appname string) (guid string, er
 		return
 	}
 	return app.Guid, nil
-}
-
-func (s *Seeker) getAppHosts(guid string) (inst []AppInstance, err error) {
-	log.Debugf("Getting application stats for app with GUID %s from CF API", guid)
-	statsMap, err := s.cf.GetAppStats(guid)
-	if err != nil {
-		err = fmt.Errorf("Error when getting stats for app with GUID `%s` (Is the app running?)", guid)
-		return
-	}
-	if len(statsMap) == 0 {
-		err = fmt.Errorf("No stats found for app with GUID `%s`", guid)
-		return
-	}
-
-	for _, stats := range statsMap {
-		stats.Stats.Host, err = canonizeIP(stats.Stats.Host)
-		if err != nil {
-			return
-		}
-		inst = append(inst, AppInstance{Host: stats.Stats.Host, Port: stats.Stats.Port})
-	}
-	return
 }
 
 func canonizeIP(ip string) (canon string, err error) {

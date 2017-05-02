@@ -19,7 +19,8 @@ type FindInput struct {
 
 //FindOutput contains the return values from a call to Find()
 type FindOutput struct {
-	AppGUID   string         `yaml:"app_guid" json:"app_guid"`
+	AppGUID   string         `yaml:"guid" json:"guid"`
+	AppName   string         `yaml:"name" json:"name"`
 	Instances []FindInstance `yaml:"instances" json:"instances"`
 	Count     int            `yaml:"count" json:"count"`
 }
@@ -41,16 +42,16 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 		return
 	}
 
+	var meta *seeker.AppMeta
 	var instances []seeker.AppInstance
 
 	if in.AppGUID != "" {
 		log.Debugf("Finding IPs by GUID")
 		ret.AppGUID = in.AppGUID
-		instances, err = s.FindInstances(s.ByGUID(in.AppGUID))
+		meta, instances, err = s.FindInstances(s.ByGUID(in.AppGUID))
 	} else {
 		log.Debugf("Finding IPs by Org, Space, and App Name")
-		ret.AppGUID, err = /*Get App GUID*/ s.ByOrgSpaceAndName(in.OrgName, in.SpaceName, in.AppName)
-		instances, err = s.FindInstances(ret.AppGUID, err)
+		meta, instances, err = s.FindInstances(s.ByOrgSpaceAndName(in.OrgName, in.SpaceName, in.AppName))
 	}
 
 	if err != nil {
@@ -59,6 +60,9 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 	}
 
 	log.Debugf("Got VM IPs")
+
+	ret.AppGUID = meta.GUID
+	ret.AppName = meta.Name
 
 	for i, instance := range instances {
 		log.Debugf("Looking up VM with IP: %s", instance.Host)
