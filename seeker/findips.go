@@ -7,11 +7,17 @@ import (
 	"github.com/starkandwayne/goutils/log"
 )
 
-// FindIPs takes the App GUID given and queries the CF API to get the IP
-// addresses of the VMs on which the instances of the application are located
-// and returns those. If inputErr is non-nil, the function will bail early with
-// the given error.
-func (s *Seeker) FindIPs(guid string, inputErr error) (ips []string, err error) {
+//AppInstance has information from the CF API about an application
+type AppInstance struct {
+	Host string
+	Port int
+}
+
+// FindInstances takes the App GUID given and queries the CF API to get the IP
+// addresses of the VMs and listening ports on which the instances of the
+// application are located and returns those. If inputErr is non-nil, the
+// function will bail early with the given error.
+func (s *Seeker) FindInstances(guid string, inputErr error) (inst []AppInstance, err error) {
 	if inputErr != nil {
 		return nil, inputErr
 	}
@@ -57,7 +63,7 @@ func (s *Seeker) getAppGUID(orgname, spacename, appname string) (guid string, er
 	return app.Guid, nil
 }
 
-func (s *Seeker) getAppHosts(guid string) (ips []string, err error) {
+func (s *Seeker) getAppHosts(guid string) (inst []AppInstance, err error) {
 	log.Debugf("Getting application stats for app with GUID %s from CF API", guid)
 	statsMap, err := s.cf.GetAppStats(guid)
 	if err != nil {
@@ -74,7 +80,7 @@ func (s *Seeker) getAppHosts(guid string) (ips []string, err error) {
 		if err != nil {
 			return
 		}
-		ips = append(ips, stats.Stats.Host)
+		inst = append(inst, AppInstance{Host: stats.Stats.Host, Port: stats.Stats.Port})
 	}
 	return
 }

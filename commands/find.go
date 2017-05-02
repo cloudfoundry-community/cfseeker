@@ -19,6 +19,7 @@ type FindInput struct {
 
 //FindOutput contains the return values from a call to Find()
 type FindOutput struct {
+	AppGUID   string         `yaml:"app_guid"`
 	Instances []FindInstance `yaml:"instances"`
 	Count     int            `yaml:"count"`
 }
@@ -28,6 +29,7 @@ type FindInstance struct {
 	InstanceNumber int    `yaml:"number"`
 	VMName         string `yaml:"vm_name"`
 	Host           string `yaml:"host"`
+	Port           int    `yaml:"port"`
 }
 
 //Find determines the location of the app you requests
@@ -39,14 +41,16 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 		return
 	}
 
-	var hosts []string
+	var instances []seeker.AppInstance
 
 	if in.AppGUID != "" {
 		log.Debugf("Finding IPs by GUID")
-		hosts, err = s.FindIPs(s.ByGUID(in.AppGUID))
+		ret.AppGUID = in.AppGUID
+		instances, err = s.FindInstances(s.ByGUID(in.AppGUID))
 	} else {
 		log.Debugf("Finding IPs by Org, Space, and App Name")
-		hosts, err = s.FindIPs(s.ByOrgSpaceAndName(in.OrgName, in.SpaceName, in.AppName))
+		ret.AppGUID, err = /*Get App GUID*/ s.ByOrgSpaceAndName(in.OrgName, in.SpaceName, in.AppName)
+		instances, err = s.FindInstances(ret.AppGUID, err)
 	}
 
 	if err != nil {
@@ -56,28 +60,29 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 
 	log.Debugf("Got VM IPs")
 
-	for i, host := range hosts {
-		log.Debugf("Looking up VM with IP: %s", host)
+	for i, instance := range instances {
+		log.Debugf("Looking up VM with IP: %s", instance.Host)
 		var vm *seeker.VMInfo
-		vm, err = s.GetVMWithIP(host)
+		vm, err = s.GetVMWithIP(instance.Host)
 
 		if err != nil {
-			err = fmt.Errorf("Error while translating VM name for IP `%s`: %s", host, err.Error())
+			err = fmt.Errorf("Error while translating VM name for IP `%s`: %s", instance.Host, err.Error())
 			return
 		}
 
 		if vm == nil {
 			//TODO: Don't error out, have alternate branch for no name resolution #resiliency
-			err = fmt.Errorf("Could not find VM with given IP")
+			err = fmt.Errorf("Could not find VM with given IP `%s`", instance.Host)
 			return
 		}
 
-		log.Debugf("Got VM with IP: %s", host)
+		log.Debugf("Got VM with IP: %s", instance.Host)
 
 		thisInstance := FindInstance{
 			InstanceNumber: i,
 			VMName:         fmt.Sprintf("%s/%d", vm.Name, vm.Index),
-			Host:           host,
+			Host:           instance.Host,
+			Port:           instance.Port,
 		}
 		ret.Instances = append(ret.Instances, thisInstance)
 	}
