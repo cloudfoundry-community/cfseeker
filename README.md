@@ -66,9 +66,8 @@ This endpoint requires that either `app_guid` or all three of `org_name`,
 #### Example
 
 ```json
-http "admin:password@localhost:8892/v1/apps?app_guid=12345678-9abc-def1-2345-6789abcdef12"
+$ http "admin:password@localhost:8892/v1/apps?app_guid=12345678-9abc-def1-2345-6789abcdef12"
 HTTP/1.1 200 OK
-Content-Length: 232
 Content-Type: application/json
 Date: Tue, 02 May 2017 17:23:18 GMT
 
