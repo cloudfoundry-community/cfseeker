@@ -29,6 +29,7 @@ type FindOutput struct {
 type FindInstance struct {
 	InstanceNumber int    `yaml:"number" json:"number"`
 	VMName         string `yaml:"vm_name" json:"vm_name"`
+	Deployment     string `yaml:"deployment" json:"deployment"`
 	Host           string `yaml:"host" json:"host"`
 	Port           int    `yaml:"port" json:"port"`
 }
@@ -85,6 +86,7 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 		thisInstance := FindInstance{
 			InstanceNumber: i,
 			VMName:         fmt.Sprintf("%s/%d", vm.JobName, vm.Index),
+			Deployment:     vm.DeploymentName,
 			Host:           instance.Host,
 			Port:           instance.Port,
 		}
