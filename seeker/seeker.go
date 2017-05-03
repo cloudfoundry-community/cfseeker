@@ -3,7 +3,6 @@ package seeker
 import (
 	"fmt"
 	"net/http"
-	"sync"
 
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/gogobosh"
@@ -14,13 +13,10 @@ import (
 //Seeker has constructs and functions necessary to find app locations in Cloud
 // Foundry
 type Seeker struct {
-	cf     *cfclient.Client
-	bosh   *gogobosh.Client
-	config *config.Config
-	vmdata map[string]VMInfo
-	//List of deployments in the BOSH Director who have their VMs currently cached
-	cachedDeps []string
-	lock       sync.Mutex
+	cf      *cfclient.Client
+	bosh    *gogobosh.Client
+	config  *config.Config
+	vmcache *VMCache
 }
 
 //NewSeeker returns a NewSeeker with a client configured with the information
@@ -43,7 +39,7 @@ func NewSeeker(conf *config.Config) (ret *Seeker, err error) {
 	}
 	log.Debugf("Done setting up BOSH Client")
 
-	ret.vmdata = map[string]VMInfo{}
+	ret.vmcache = newVMCache()
 	return
 }
 

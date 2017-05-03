@@ -84,7 +84,7 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 
 		thisInstance := FindInstance{
 			InstanceNumber: i,
-			VMName:         fmt.Sprintf("%s/%d", vm.Name, vm.Index),
+			VMName:         fmt.Sprintf("%s/%d", vm.JobName, vm.Index),
 			Host:           instance.Host,
 			Port:           instance.Port,
 		}
