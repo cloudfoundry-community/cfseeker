@@ -29,6 +29,7 @@ type ServerConfig struct {
 	BasicAuth BasicAuthConfig `yaml:"basic_auth"`
 	Port      int             `yaml:"port"`
 	NoAuth    bool            `yaml:"no_auth"`
+	CacheTTL  int             `yaml:"cache_ttl"` //in seconds
 }
 
 //BasicAuthConfig lets you set up basic auth for your API

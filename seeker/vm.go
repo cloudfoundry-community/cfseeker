@@ -100,6 +100,7 @@ func (c *VMCache) getFromCache(host string) (ret VMInfo, found bool) {
 		if age := time.Since(dep.cachedAt); c.ttl >= 0 && age >= c.ttl {
 			log.Debugf("Cached deployment (%s) deemed stale. Age: %s, TTL: %s", ret.DeploymentName, age, c.ttl)
 			c.invalidateDeployment(ret.DeploymentName)
+			found = false
 		}
 	}
 	return

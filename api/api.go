@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/starkandwayne/goutils/log"
@@ -54,6 +55,8 @@ func Initialize(conf *config.Config) (err error) {
 		if err != nil {
 			return fmt.Errorf("Error while creating seeker backend: %s", err.Error())
 		}
+
+		defaultSeeker.SetTTL(time.Duration(conf.Server.CacheTTL) * time.Second)
 	}
 
 	router := mux.NewRouter()
