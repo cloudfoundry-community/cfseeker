@@ -21,7 +21,6 @@ func auth(h SeekerHandler) http.HandlerFunc {
 	// before deferring to the configured auth type, just so that doesn't need to
 	// be done in all the other handlers
 	return func(w http.ResponseWriter, request *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
 		configuredAuth(h)(w, request) //Form the handler with our auth, then call that handler
 	}
 }
@@ -53,7 +52,6 @@ func basicAuth(h SeekerHandler) http.HandlerFunc {
 				password == configuration.Server.BasicAuth.Password
 		}
 
-		w.Header().Set("Content-Type", "application/json")
 		//Get basic auth if its there
 		reqUser, reqPass, isBasicAuth := request.BasicAuth()
 		if !isBasicAuth {
@@ -62,7 +60,7 @@ func basicAuth(h SeekerHandler) http.HandlerFunc {
 			w.Header().Set("WWW-Authenticate", "Basic realm=\"Portcullis API\"")
 
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write(NewResponse().Err(errorMessage).Bytes())
+			NewResponse(w).Err(errorMessage).Write()
 			return
 		}
 
@@ -72,7 +70,7 @@ func basicAuth(h SeekerHandler) http.HandlerFunc {
 			log.Warnf("basicAuth: %s", errorMessage)
 
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write(NewResponse().Err(errorMessage).Bytes())
+			NewResponse(w).Err(errorMessage).Write()
 			return
 		}
 		h(w, request, defaultSeeker)

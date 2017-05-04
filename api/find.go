@@ -33,9 +33,9 @@ func findHandler(w http.ResponseWriter, r *http.Request, s *seeker.Seeker) {
 		} else {
 			w.WriteHeader(500)
 		}
-		w.Write(NewResponse().Err(err.Error()).Bytes())
+		NewResponse(w).Err(err.Error()).Write()
 		return
 	}
 
-	w.Write(NewResponse().AttachContents(output).Bytes())
+	NewResponse(w).AttachContents(output).Write()
 }

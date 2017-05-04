@@ -3,12 +3,15 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 //Response is the structured response of the CFSeeker API
 type Response struct {
 	Meta     *Metadata   `json:"meta,omitempty"`
 	Contents interface{} `json:"contents,omitempty"`
+	writer   http.ResponseWriter
+	code     int
 }
 
 //Metadata has additional information about an API Response, like error messages
@@ -18,8 +21,14 @@ type Metadata struct {
 }
 
 //NewResponse returns a pointer to an empty Response struct
-func NewResponse() *Response {
-	return &Response{}
+func NewResponse(w http.ResponseWriter) *Response {
+	return &Response{writer: w}
+}
+
+//Code sets the HTTP response code, which will be used if write is called.
+func (r *Response) Code(code int) *Response {
+	r.code = code
+	return r
 }
 
 //Err takes the receiver Response, attaches the given message as an error,
@@ -64,4 +73,12 @@ func (r Response) String() string {
 		panic(fmt.Sprintf("Could not unmarshal response from object %#v", r))
 	}
 	return string(respBytes)
+}
+
+func (r *Response) Write() {
+	r.writer.Header().Set("Content-Type", "application/json")
+	if r.code != 0 {
+		r.writer.WriteHeader(r.code)
+	}
+	r.writer.Write(r.Bytes())
 }
