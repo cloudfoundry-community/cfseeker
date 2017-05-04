@@ -61,7 +61,8 @@ func Initialize(conf *config.Config) (err error) {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", auth(webHandler))
-	router.HandleFunc(FindEndpoint, auth(findHandler))
+	router.HandleFunc(FindEndpoint, auth(findHandler)).Methods("GET")
+	router.HandleFunc(MetaEndpoint, metaHandler).Methods("GET")
 
 	log.Debugf("Listening on port %d", conf.Server.Port)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", conf.Server.Port), router)
