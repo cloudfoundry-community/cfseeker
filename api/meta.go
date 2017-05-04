@@ -12,7 +12,7 @@ type MetaOutput struct {
 }
 
 func metaHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	output := MetaOutput{Version: config.Version}
 	w.Write(NewResponse().AttachContents(output).Bytes())
-
 }
