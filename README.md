@@ -3,8 +3,10 @@
 Tool to find where apps on your Cloud Foundry are.
 Very much WIP at the moment.
 
-Right now, the local standalone version can tell you your app locations when
-connected to a Cloud Foundry and BOSH.
+ Right now, the local standalone version can tell you your app locations when
+ connected to a Cloud Foundry and BOSH. It can also currently run as an
+ server with an API that will allow you to access the functions available
+ through the CLI remotely.
 
 ## Goals
 
@@ -42,7 +44,7 @@ server:
 
 You can build it if you want - grab your favorite `go` distribution and build the files in the `cmd/cfseeker` directory. But let's be serious - you don't want to build it - head over to the releases page and there are binaries provided for you, free of charge.
 
-Currently, the only supported command is `cfseeker find`. For more information on that, you can run `cfseeker help find`. You can also just run the `help` command for all the information you could ever want, or use the `--help` flag (you should also be able to use `-h`, but I made a mistake and that doesn't work in v0.1.0 _soooo_ next release).
+Currently, the only supported command is `cfseeker find`. For more information on that, you can run `cfseeker help find`. You can also just run the `help` command for all the information you could ever want, or use the `--help` flag.
 
 ## API Reference
 
@@ -96,8 +98,8 @@ Date: Tue, 02 May 2017 17:23:18 GMT
 
 {
     "contents": {
-        "guid": "12345678-9abc-def1-2345-6789abcdef12",
         "count": 2,
+        "guid": "12345678-9abc-def1-2345-6789abcdef12",
         "instances": [
             {
                 "host": "10.244.2.133",
@@ -115,6 +117,29 @@ Date: Tue, 02 May 2017 17:23:18 GMT
             }
         ],
         "name": "your-test-app"
+    }
+}
+```
+
+### Clear the BOSH VM Info Cache
+
+`DELETE /v1/cache/bosh`
+
+ If your VM mappings are out of date and you don't want to wait for the cache
+ TTL, you can force a cache reset by calling this endpoint.
+
+**Example:**
+
+```json
+$ http DELETE "admin:password@localhost:8892/v1/cache/bosh"
+HTTP/1.1 200 OK
+Content-Length: 62
+Content-Type: application/json
+Date: Thu, 04 May 2017 18:40:55 GMT
+
+{
+    "meta": {
+        "message": "BOSH VM info cache successfully cleared"
     }
 }
 ```
