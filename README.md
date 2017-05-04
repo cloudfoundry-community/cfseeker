@@ -37,6 +37,7 @@ server:
     username: admin
     password: password
   #no_auth: true  <set this to true and don't give basic auth creds if you want no auth
+  cache_ttl: 6000 #time in seconds to hold cache entries
   port: 8892
 ```
 
