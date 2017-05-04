@@ -1,5 +1,14 @@
 package config
 
+//Version of cfseeker gets set here
+var Version = ""
+
+func init() {
+	if Version == "" {
+		Version = "/shrug"
+	}
+}
+
 //Config contains all the information needed for the seeker backend to operate
 type Config struct {
 	CF     CFConfig     `yaml:"cf"`
