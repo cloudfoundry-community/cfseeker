@@ -6,4 +6,9 @@ const (
 	// MetaEndpoint is the URL endpoint corresponding to getting meta information
 	// about this cfseeker server
 	MetaEndpoint = "/v1/meta"
+	// InvalidateBOSHEndpoint is the endpoint corresponding to manipulation of the
+	// BOSH VM info cache
+	InvalidateBOSHEndpoint = "/v1/cache/bosh"
+	//WebEndpoint is the path to the web UI
+	WebEndpoint = "/"
 )

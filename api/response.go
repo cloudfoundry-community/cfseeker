@@ -18,6 +18,7 @@ type Response struct {
 type Metadata struct {
 	Error   string `json:"error,omitempty"`
 	Warning string `json:"warning,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 //NewResponse returns a pointer to an empty Response struct
@@ -28,6 +29,16 @@ func NewResponse(w http.ResponseWriter) *Response {
 //Code sets the HTTP response code, which will be used if write is called.
 func (r *Response) Code(code int) *Response {
 	r.code = code
+	return r
+}
+
+// Message takes the receiver Response, attaches the given message as a
+// informational message, and then returns the Response object.
+func (r *Response) Message(m string) *Response {
+	if r.Meta == nil {
+		r.Meta = &Metadata{}
+	}
+	r.Meta.Message = m
 	return r
 }
 
