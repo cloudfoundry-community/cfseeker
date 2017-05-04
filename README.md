@@ -44,11 +44,34 @@ You can build it if you want - grab your favorite `go` distribution and build th
 
 Currently, the only supported command is `cfseeker find`. For more information on that, you can run `cfseeker help find`. You can also just run the `help` command for all the information you could ever want, or use the `--help` flag (you should also be able to use `-h`, but I made a mistake and that doesn't work in v0.1.0 _soooo_ next release).
 
-## API
+## API Reference
+
+If a non-2xx HTTP code is returned, then there will be a meta.error in the JSON
+giving information about the error.
+
+### Get Info about the CFSeeker Server
+
+`GET /v1/meta`
+
+**Example:**
+
+```json
+$ http localhost:8892/v1/meta
+HTTP/1.1 200 OK
+Content-Length: 31
+Content-Type: application/json
+Date: Thu, 04 May 2017 15:32:02 GMT
+
+{
+    "contents": {
+        "version": "1234"
+    }
+}
+```
 
 ### Get Info About Your STARTED Application
 
-`GET /v1/apps/`
+`GET /v1/apps`
 
 #### Supported Arguments
 
@@ -63,7 +86,7 @@ This endpoint requires that either `app_guid` or all three of `org_name`,
   * `space_name`: The name of the CF space your application is pushed to
   * `app_name`: The name of your CF app, as it was pushed.
 
-#### Example
+**Example:**
 
 ```json
 $ http "admin:password@localhost:8892/v1/apps?app_guid=12345678-9abc-def1-2345-6789abcdef12"
@@ -73,19 +96,21 @@ Date: Tue, 02 May 2017 17:23:18 GMT
 
 {
     "contents": {
-        "app_guid": "12345678-9abc-def1-2345-6789abcdef12",
+        "guid": "12345678-9abc-def1-2345-6789abcdef12",
         "count": 2,
         "instances": [
             {
                 "host": "10.244.2.133",
                 "number": 0,
                 "port": 61017,
+                "deployment": "your-cloudfoundry",
                 "vm_name": "runner_z1/0"
             },
             {
                 "host": "10.244.2.134",
                 "number": 1,
                 "port": 61011,
+                "deployment": "your-cloudfoundry",
                 "vm_name": "runner_z1/1"
             }
         ],
