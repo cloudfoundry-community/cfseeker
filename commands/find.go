@@ -28,8 +28,8 @@ type FindOutput struct {
 //FindInstance represents information about one instance of an app
 type FindInstance struct {
 	InstanceNumber int    `yaml:"number" json:"number"`
-	VMName         string `yaml:"vm_name" json:"vm_name"`
-	Deployment     string `yaml:"deployment" json:"deployment"`
+	VMName         string `yaml:"vm_name,omitempty" json:"vm_name,omitempty"`
+	Deployment     string `yaml:"deployment,omitempty" json:"deployment,omitempty"`
 	Host           string `yaml:"host" json:"host"`
 	Port           int    `yaml:"port" json:"port"`
 }
@@ -66,6 +66,25 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 	ret.AppName = meta.Name
 
 	for i, instance := range instances {
+		ret.Instances = append(ret.Instances, FindInstance{
+			InstanceNumber: i,
+			Host:           instance.Host,
+			Port:           instance.Port,
+		})
+	}
+
+	if s.BOSHConfigured() {
+		lookupAndAssignBOSHInfo(ret.Instances, s)
+	}
+
+	ret.Count = len(ret.Instances)
+
+	output = ret
+	return
+}
+
+func lookupAndAssignBOSHInfo(instances []FindInstance, s *seeker.Seeker) (err error) {
+	for _, instance := range instances {
 		log.Debugf("Looking up VM with IP: %s", instance.Host)
 		var vm *seeker.VMInfo
 		vm, err = s.GetVMWithIP(instance.Host)
@@ -76,26 +95,15 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 		}
 
 		if vm == nil {
-			//TODO: Don't error out, have alternate branch for no name resolution #resiliency
 			err = fmt.Errorf("Could not find VM with given IP `%s`", instance.Host)
 			return
 		}
 
 		log.Debugf("Got VM with IP: %s", instance.Host)
 
-		thisInstance := FindInstance{
-			InstanceNumber: i,
-			VMName:         fmt.Sprintf("%s/%d", vm.JobName, vm.Index),
-			Deployment:     vm.DeploymentName,
-			Host:           instance.Host,
-			Port:           instance.Port,
-		}
-		ret.Instances = append(ret.Instances, thisInstance)
+		instance.Deployment = vm.DeploymentName
+		instance.VMName = fmt.Sprintf("%s/%d", vm.JobName, vm.Index)
 	}
-
-	ret.Count = len(ret.Instances)
-
-	output = ret
 	return
 }
 

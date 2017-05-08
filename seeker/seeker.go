@@ -32,12 +32,17 @@ func NewSeeker(conf *config.Config) (ret *Seeker, err error) {
 	}
 	log.Debugf("Done setting up CF Client")
 
-	log.Debugf("Setting up BOSH Client")
-	ret.bosh, err = ret.getBOSHClientFromConfig()
-	if err != nil {
-		return nil, fmt.Errorf("Error connecting to BOSH API: %s", err.Error())
+	if ret.BOSHConfigured() {
+		log.Debugf("Setting up BOSH Client")
+		ret.bosh, err = ret.getBOSHClientFromConfig()
+		if err != nil {
+			return nil, fmt.Errorf("Error connecting to BOSH API: %s", err.Error())
+		}
+
+		log.Debugf("Done setting up BOSH Client")
+	} else {
+		log.Debugf("Skipping BOSH Client setup")
 	}
-	log.Debugf("Done setting up BOSH Client")
 
 	ret.vmcache = newVMCache()
 	return
@@ -68,4 +73,14 @@ func (s *Seeker) getBOSHClientFromConfig() (client *gogobosh.Client, err error) 
 		HttpClient:        http.DefaultClient,
 		SkipSslValidation: s.config.BOSH.SkipSSLValidation,
 	})
+}
+
+// BOSHConfigured returns true if the attached configuration has all the keys
+// required to attempt a connection to BOSH. False otherwise.
+func (s *Seeker) BOSHConfigured() bool {
+	return s.config.BOSH.APIAddress != "" &&
+		len(s.config.BOSH.Deployments) > 0 &&
+		s.config.BOSH.Username != "" &&
+		s.config.BOSH.Password != "" &&
+		!s.config.BOSH.SkipBOSH
 }

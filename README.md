@@ -3,10 +3,10 @@
 Tool to find where apps on your Cloud Foundry are.
 Very much WIP at the moment.
 
- Right now, the local standalone version can tell you your app locations when
- connected to a Cloud Foundry and BOSH. It can also currently run as an
- server with an API that will allow you to access the functions available
- through the CLI remotely.
+  Right now, the local standalone version can tell you your app locations
+  when connected to a Cloud Foundry and BOSH. It can also currently run as a
+  server with an API that will allow you to access the functions available
+  through the CLI remotely.
 
 ## Goals
 

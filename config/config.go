@@ -31,6 +31,7 @@ type BOSHConfig struct {
 	Password          string   `yaml:"password"`
 	SkipSSLValidation bool     `yaml:"skip_ssl_validation"`
 	Deployments       []string `yaml:"deployments"`
+	SkipBOSH          bool     `yaml:"skip_bosh"`
 }
 
 //ServerConfig has the info needed specifically for running in server mode
