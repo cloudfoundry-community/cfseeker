@@ -1,16 +1,23 @@
 # cfseeker
 
 Tool to find where apps on your Cloud Foundry are.
-Very much WIP at the moment.
+WIP at the moment.
 
   Right now, the local standalone version can tell you your app locations
   when connected to a Cloud Foundry and BOSH. It can also currently run as a
   server with an API that will allow you to access the functions available
-  through the CLI remotely.
+  through the CLI remotely. There is now a Web UI that can be accessed by navigating
+  to the root endpoint of the listening server.
 
 ## Goals
 
 Support local standalone version, server with web UI, and cli to interact with server.
+
+## Web UI
+
+Point your browser at the root endpoint of the url where you have the server listening.
+Click on links, type into fields. If you can't figure it out from there, then the
+repo probably needs an issue posted.
 
 ## Local Configuration
 
