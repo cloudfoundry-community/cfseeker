@@ -7,7 +7,15 @@ import (
 )
 
 func webHandler(w http.ResponseWriter, r *http.Request, _ *seeker.Seeker) {
-	//TODO: Write this
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Welcome to CFSeeker. This will be a useable webpage in a future release."))
+	if r.URL.Path == "" || r.URL.Path == "/" {
+		r.URL.Path = "/index.html"
+	}
+
+	if page, found := assets[r.URL.Path]; found {
+		w.WriteHeader(http.StatusOK)
+		w.Write(page)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("That page doesn't exist"))
+	}
 }

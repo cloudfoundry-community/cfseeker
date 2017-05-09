@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>cfseeker - find</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+
+<body>
+  <h1>Let's find some stuff!</h1>
+  <br>
+  <h2>By Org, Space, and Name</h2>
+  <form class="findform" action="/v1/apps">
+    <input type="text" name="org_name" placeholder="Organization Name"><br>
+    <input type="text" name="space_name" placeholder="Space Name"><br>
+    <input type="text" name="app_name" placeholder="App Name"><br>
+    <input type="submit" value="submit">
+  </form>
+
+  <h2>By App GUID</h2>
+  <form class="findform" action="/v1/apps">
+    <input type="text" name="app_guid" placeholder="App GUID"><br>
+    <input type="submit" value="submit">
+  </form>
+
+  <div id="result">
+    <h2>Result</h2>
+    <p id="resultbody"></p>
+  </div>
+  <script>
+    $("#result").hide()
+
+    function successfulFind(json, status, j) {
+      var contents = json["contents"]
+      //Use the response to make HTML under the results section
+      var html = "<b>Name:</b> " + contents["name"] + "<br>" +
+        "<b>GUID:</b> " + contents["guid"] + "<br>"
+      var instances = contents["instances"]
+      //Make the html for each of the instances
+      for (var i = 0; i < contents["count"]; i++) {
+        var inst = instances[i]
+        html = html + "<blockquote><b>---</b> <br>" +
+          "<b>Host:</b> " + inst["host"] + "<br>" +
+          "<b>Port:</b> " + inst["port"] + "<br>"
+        if ("vm_name" in inst && "deployment" in inst) {
+          html = html + "<b>VM Name:</b> " + inst["vm_name"] + "<br>" +
+            "<b>Deployment:</b> " + inst["deployment"] + "<br>"
+        }
+        html = html + "</blockquote>"
+      }
+      $("#resultbody").html(html)
+      $("#resultbody").css("background-color", "white")
+      $("#result").show()
+    }
+
+    function erroredFind(j, status, err) {
+      var rawErr = JSON.parse(j.responseText).meta.error
+      var finalErr = rawErr.replace("\n", "<br>")
+      $("#resultbody").html("Find failed: " + status + ": " + err + "<br>" + finalErr)
+      $("#resultbody").css("background-color", "pink")
+      $("#result").show()
+    }
+
+    //Do a find form ourselves
+    $(".findform").submit(function (e) {
+      $.ajax({
+        url: "/v1/apps",
+        data: {
+          "org_name": $(":input[name=org_name]").val(),
+          "space_name": $(":input[name=space_name]").val(),
+          "app_name": $(":input[name=app_name]").val(),
+          "app_guid": $(":input[name=app_guid]").val()
+        },
+        success: successfulFind,
+        error: erroredFind
+      })
+      return false
+    })
+  </script>
+
+</body>
+
+</html>

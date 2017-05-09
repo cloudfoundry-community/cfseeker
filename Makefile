@@ -19,3 +19,6 @@ all: darwin linux
 
 clean:
 	rm -f bin/*
+
+embed:
+	go run utils/embed.go assets/web
