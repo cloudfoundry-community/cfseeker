@@ -2,6 +2,9 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>cfseeker</title>
   <!-- jQuery -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -11,13 +14,23 @@
 </head>
 
 <body>
-  <h1>Welcome to CF Seeker!</h1>
-  <h3>
-    <a href="/web/find/index.html">Find apps</a>
-  </h3>
-  <div id="metainfo">
-    <h2>About</h2>
-    <p><b>Version:</b> <span id="version"></span></p>
+  <div class="container">
+    <h1>CF Seeker</h1>
+    <div id="navigation" role="navigation">
+      <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="/web/find/index.html">Find</a></li>
+      </ul>
+    </div>
+    <p class="lead">To get started finding your apps, click on the Find link above.</p>
+    <nav id="metainfo" class="navbar navbar-default navbar-fixed-bottom">
+      <div class="container">
+        <p class="navbar-brand">About</p>
+        <div class="container">
+          <p class="navbar-text"><b>Version</b><br><span id=version></span></p>
+        </div>
+      </div>
+    </nav>
   </div>
 
   <script>
