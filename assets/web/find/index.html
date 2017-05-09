@@ -2,81 +2,170 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>cfseeker - find</title>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <style>
+    #loading {
+      display: none;
+    }
+
+    #result {
+      display: none;
+    }
+
+    .appmeta {
+      border: medium solid grey;
+      background-color: lightgreen;
+      border-radius: 5px;
+      padding: 2px;
+      margin: 2px;
+    }
+
+    .appinstance {
+      border: medium double grey;
+      background-color: lightyellow;
+      border-radius: 5px;
+      padding: 2px;
+      margin: 2px;
+    }
+
+    .erroroutput {
+      border: medium solid grey;
+      background-color: pink;
+      border-radius: 5px;
+      padding: 2px;
+      margin: 2px;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Let's find some stuff!</h1>
-  <br>
-  <h2>By Org, Space, and Name</h2>
-  <form class="findform" action="/v1/apps">
-    <input type="text" name="org_name" placeholder="Organization Name"><br>
-    <input type="text" name="space_name" placeholder="Space Name"><br>
-    <input type="text" name="app_name" placeholder="App Name"><br>
-    <input type="submit" value="submit">
-  </form>
+  <div class="container">
+    <h1>CF Seeker</h1>
+    <div id="navigation" role="navigation">
+      <ul class="nav nav-tabs">
+        <li role="presentation"><a href="/web/index.html">Home</a></li>
+        <li role="presentation" class="active"><a href="/web/find/index.html">Find</a></li>
+      </ul>
+    </div>
 
-  <h2>By App GUID</h2>
-  <form class="findform" action="/v1/apps">
-    <input type="text" name="app_guid" placeholder="App GUID"><br>
-    <input type="submit" value="submit">
-  </form>
+    <p class="lead">Find your apps by completing a set of the fields below and hitting submit</p>
+    <div class="row">
+      <div class="col-md-5">
+        <h3 class="text-center">By Org, Space, and Name</h3>
+        <form class="findform" action="/v1/apps">
+          <input type="text" class="form-control" name="org_name" placeholder="Organization Name"><br>
+          <input type="text" class="form-control" name="space_name" placeholder="Space Name"><br>
+          <input type="text" class="form-control" name="app_name" placeholder="App Name"><br>
+        </form>
+      </div>
+      <div class="col-md-1">
+        <h2 class="text-center">-OR-</h2>
+      </div>
+      <div class="col-md-5">
+        <h3 class="text-center">By App GUID</h3>
+        <form class="findform" action="/v1/apps">
+          <input type="text" class="form-control" name="app_guid" placeholder="App GUID"><br>
+        </form>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-11">
+        <form class="findform" action="/v1/apps">
+          <input type="submit" class="btn btn-block" value="submit">
+        </form>
+      </div>
+    </div>
 
-  <div id="result">
-    <h2>Result</h2>
-    <p id="resultbody"></p>
-  </div>
-  <script>
-    $("#result").hide()
+    <div class="row">
+      <div class="progress col-md-11" id="loading" display="none">
+        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+          style="width: 100%">
+        </div>
+      </div>
+    </div>
 
-    function successfulFind(json, status, j) {
-      var contents = json["contents"]
-      //Use the response to make HTML under the results section
-      var html = "<b>Name:</b> " + contents["name"] + "<br>" +
-        "<b>GUID:</b> " + contents["guid"] + "<br>"
-      var instances = contents["instances"]
-      //Make the html for each of the instances
-      for (var i = 0; i < contents["count"]; i++) {
-        var inst = instances[i]
-        html = html + "<blockquote><b>---</b> <br>" +
+
+    <div id="result">
+      <h3>Result</h3>
+      <p id="resultbody"></p>
+    </div>
+    <script>
+      function appMeta(name, guid) {
+        return '<div class="row"><div class="col-md-6 appmeta container">' +
+          "<b> Name:</b> " + name + "<br>" +
+          "<b>GUID:</b> " + guid + "<br>" +
+          '</div></div>'
+      }
+
+      function appInstance(inst) {
+        var html = '<div class="row"><div class="col-md-6 appinstance container">' +
           "<b>Host:</b> " + inst["host"] + "<br>" +
           "<b>Port:</b> " + inst["port"] + "<br>"
         if ("vm_name" in inst && "deployment" in inst) {
           html = html + "<b>VM Name:</b> " + inst["vm_name"] + "<br>" +
             "<b>Deployment:</b> " + inst["deployment"] + "<br>"
         }
-        html = html + "</blockquote>"
+        html = html + "</div></div>"
+        return html
       }
-      $("#resultbody").html(html)
-      $("#resultbody").css("background-color", "white")
-      $("#result").show()
-    }
 
-    function erroredFind(j, status, err) {
-      var rawErr = JSON.parse(j.responseText).meta.error
-      var finalErr = rawErr.replace("\n", "<br>")
-      $("#resultbody").html("Find failed: " + status + ": " + err + "<br>" + finalErr)
-      $("#resultbody").css("background-color", "pink")
-      $("#result").show()
-    }
+      function successfulFind(json, status, j) {
+        var contents = json["contents"]
+        //Use the response to make HTML under the results section
+        var html = appMeta(contents.name, contents.guid)
+        html = html + `<div class="row">
+      <div class="col-md-6 text-center"><h4>Instances</h4></div>
+      </div>`
+        var instances = contents["instances"]
+        //Make the html for each of the instances
+        for (var i = 0; i < contents["count"]; i++) {
+          var inst = instances[i]
+          html = html + appInstance(inst)
+        }
+        $("#resultbody").html(html)
+        $("#resultbody").css("background-color", "white")
+        $("#result").show()
+      }
 
-    //Do a find form ourselves
-    $(".findform").submit(function (e) {
-      $.ajax({
-        url: "/v1/apps",
-        data: {
-          "org_name": $(":input[name=org_name]").val(),
-          "space_name": $(":input[name=space_name]").val(),
-          "app_name": $(":input[name=app_name]").val(),
-          "app_guid": $(":input[name=app_guid]").val()
-        },
-        success: successfulFind,
-        error: erroredFind
+      function erroredFind(j, status, err) {
+        var rawErr = JSON.parse(j.responseText).meta.error
+        var finalErr = rawErr.replace("\n", "<br>")
+        $("#resultbody").html('<div class="row"><div class="col-md-11 erroroutput"' +
+          "Find failed: " + status + ": " + err + "<br>" + finalErr + '</div></div>')
+        $("#resultbody").css("background-color", "pink")
+        $("#result").show()
+      }
+
+      function hideProgress(j, status) {
+        $("#loading").hide()
+      }
+
+      //Do a find form ourselves
+      $(".findform").submit(function (e) {
+        $("#result").hide()
+        $("#loading").show()
+        $.ajax({
+          url: "/v1/apps",
+          data: {
+            "org_name": $(":input[name=org_name]").val(),
+            "space_name": $(":input[name=space_name]").val(),
+            "app_name": $(":input[name=app_name]").val(),
+            "app_guid": $(":input[name=app_guid]").val()
+          },
+          success: successfulFind,
+          error: erroredFind,
+          complete: hideProgress
+        })
+        return false
       })
-      return false
-    })
-  </script>
+    </script>
 
 </body>
 
