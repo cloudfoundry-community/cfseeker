@@ -84,7 +84,7 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 }
 
 func lookupAndAssignBOSHInfo(instances []FindInstance, s *seeker.Seeker) (err error) {
-	for _, instance := range instances {
+	for i, instance := range instances {
 		log.Debugf("Looking up VM with IP: %s", instance.Host)
 		var vm *seeker.VMInfo
 		vm, err = s.GetVMWithIP(instance.Host)
@@ -101,8 +101,8 @@ func lookupAndAssignBOSHInfo(instances []FindInstance, s *seeker.Seeker) (err er
 
 		log.Debugf("Got VM with IP: %s", instance.Host)
 
-		instance.Deployment = vm.DeploymentName
-		instance.VMName = fmt.Sprintf("%s/%d", vm.JobName, vm.Index)
+		instances[i].Deployment = vm.DeploymentName
+		instances[i].VMName = fmt.Sprintf("%s/%d", vm.JobName, vm.Index)
 	}
 	return
 }
