@@ -1,6 +1,6 @@
 BUILD_TARGET ?= cmd/cfseeker/*.go
 OUTPUT_DIR ?= bin
-LDFLAGS := -X "github.com/thomasmmitchell/cfseeker/config.Version=$(VERSION)"
+LDFLAGS := -X "github.com/cloudfoundry-community/cfseeker/config.Version=$(VERSION)"
 OUTPUT_NAME ?= cfseeker
 BUILD := go build -v -ldflags='$(LDFLAGS)' -o $(OUTPUT_DIR)/$(OUTPUT_NAME) $(BUILD_TARGET)
 

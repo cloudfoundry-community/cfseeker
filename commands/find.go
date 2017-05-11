@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 	"github.com/starkandwayne/goutils/log"
-	"github.com/thomasmmitchell/cfseeker/seeker"
 )
 
 //FindInput contains the information required to perform the find command

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cloudfoundry-community/cfseeker/config"
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 	"github.com/gorilla/mux"
 	"github.com/starkandwayne/goutils/log"
-	"github.com/thomasmmitchell/cfseeker/config"
-	"github.com/thomasmmitchell/cfseeker/seeker"
 )
 
 //SeekerHandler is a modified version of http.HandlerFunc that receives a Seeker

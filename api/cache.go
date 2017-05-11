@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/thomasmmitchell/cfseeker/seeker"
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 )
 
 func invalidateBOSHCacheHandler(w http.ResponseWriter, r *http.Request, s *seeker.Seeker) {

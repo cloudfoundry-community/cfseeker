@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/cloudfoundry-community/cfseeker/config"
 	"github.com/starkandwayne/goutils/log"
-	"github.com/thomasmmitchell/cfseeker/config"
 )
 
 type authorizer func(SeekerHandler) http.HandlerFunc

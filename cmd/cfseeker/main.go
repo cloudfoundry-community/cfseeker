@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/cloudfoundry-community/cfseeker/commands"
+	"github.com/cloudfoundry-community/cfseeker/config"
 	"github.com/starkandwayne/goutils/ansi"
 	"github.com/starkandwayne/goutils/log"
-	"github.com/thomasmmitchell/cfseeker/commands"
-	"github.com/thomasmmitchell/cfseeker/config"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 	yaml "gopkg.in/yaml.v2"

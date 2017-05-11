@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/thomasmmitchell/cfseeker/config"
+	"github.com/cloudfoundry-community/cfseeker/config"
 )
 
 //MetaOutput gives meta information about this cfseeker server.

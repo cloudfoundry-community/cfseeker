@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cloudfoundry-community/cfseeker/config"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/gogobosh"
 	"github.com/starkandwayne/goutils/log"
-	"github.com/thomasmmitchell/cfseeker/config"
 )
 
 //Seeker has constructs and functions necessary to find app locations in Cloud

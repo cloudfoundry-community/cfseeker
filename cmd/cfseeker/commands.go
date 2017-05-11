@@ -5,10 +5,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/thomasmmitchell/cfseeker/api"
-	"github.com/thomasmmitchell/cfseeker/commands"
-	"github.com/thomasmmitchell/cfseeker/config"
-	"github.com/thomasmmitchell/cfseeker/seeker"
+	"github.com/cloudfoundry-community/cfseeker/api"
+	"github.com/cloudfoundry-community/cfseeker/commands"
+	"github.com/cloudfoundry-community/cfseeker/config"
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 )
 
 type commandFn func(inputs interface{}) (interface{}, error)

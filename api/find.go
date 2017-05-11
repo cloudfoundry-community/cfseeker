@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/thomasmmitchell/cfseeker/commands"
-	"github.com/thomasmmitchell/cfseeker/seeker"
+	"github.com/cloudfoundry-community/cfseeker/commands"
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 )
 
 const (
