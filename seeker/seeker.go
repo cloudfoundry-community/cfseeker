@@ -70,6 +70,8 @@ func (s *Seeker) getBOSHClientFromConfig() (client *gogobosh.Client, err error) 
 		BOSHAddress:       s.config.BOSH.APIAddress,
 		Username:          s.config.BOSH.Username,
 		Password:          s.config.BOSH.Password,
+		ClientID:          s.config.BOSH.ClientID,
+		ClientSecret:      s.config.BOSH.ClientSecret,
 		HttpClient:        http.DefaultClient,
 		SkipSslValidation: s.config.BOSH.SkipSSLValidation,
 	})
@@ -78,9 +80,9 @@ func (s *Seeker) getBOSHClientFromConfig() (client *gogobosh.Client, err error) 
 // BOSHConfigured returns true if the attached configuration has all the keys
 // required to attempt a connection to BOSH. False otherwise.
 func (s *Seeker) BOSHConfigured() bool {
-	return s.config.BOSH.APIAddress != "" &&
-		len(s.config.BOSH.Deployments) > 0 &&
-		s.config.BOSH.Username != "" &&
-		s.config.BOSH.Password != "" &&
-		!s.config.BOSH.SkipBOSH
+	conf := s.config.BOSH
+	return conf.APIAddress != "" &&
+		len(conf.Deployments) > 0 &&
+		((conf.Username != "" && conf.Password != "") || (conf.ClientID != "" && conf.ClientSecret != "")) &&
+		!conf.SkipBOSH
 }

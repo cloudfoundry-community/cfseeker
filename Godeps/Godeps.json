@@ -24,7 +24,7 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-community/gogobosh",
-			"Rev": "96177f28312ccc27f8d694619ac382c4744a0ab6"
+			"Rev": "db8abad403542f4114812bbdcaafbe17d52ccfb3"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",

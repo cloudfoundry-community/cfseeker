@@ -29,6 +29,8 @@ type BOSHConfig struct {
 	APIAddress        string   `yaml:"api_address"`
 	Username          string   `yaml:"username"`
 	Password          string   `yaml:"password"`
+	ClientID          string   `yaml:"client_id"`
+	ClientSecret      string   `yaml:"client_secret"`
 	SkipSSLValidation bool     `yaml:"skip_ssl_validation"`
 	Deployments       []string `yaml:"deployments"`
 	SkipBOSH          bool     `yaml:"skip_bosh"`
