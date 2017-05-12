@@ -3,6 +3,7 @@ package seeker
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/cloudfoundry-community/cfseeker/config"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
@@ -56,7 +57,7 @@ func (s *Seeker) getCFClientFromConfig() (client *cfclient.Client, err error) {
 		ApiAddress:        s.config.CF.APIAddress,
 		ClientID:          s.config.CF.ClientID,
 		ClientSecret:      s.config.CF.ClientSecret,
-		HttpClient:        http.DefaultClient,
+		HttpClient:        &http.Client{Timeout: time.Second * 30},
 		SkipSslValidation: s.config.CF.SkipSSLValidation,
 		UserAgent:         "Go-CF-client/1.1",
 	})
