@@ -135,9 +135,6 @@ func (s *Seeker) cacheUntil(ip string) (err error) {
 		return
 	}
 
-	// For this to work, deployments cached must be done in the same order as the
-	// full deployment list. Basically, the loop continues where the cache left
-	// off
 	for _, dep := range s.config.BOSH.Deployments {
 		if s.vmcache.deployments[dep] != nil { //if deployment is cached...
 			continue
