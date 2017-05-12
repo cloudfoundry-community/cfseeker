@@ -73,7 +73,7 @@ func (s *Seeker) getBOSHClientFromConfig() (client *gogobosh.Client, err error) 
 		Password:          s.config.BOSH.Password,
 		ClientID:          s.config.BOSH.ClientID,
 		ClientSecret:      s.config.BOSH.ClientSecret,
-		HttpClient:        http.DefaultClient,
+		HttpClient:        &http.Client{Timeout: time.Second * 30},
 		SkipSslValidation: s.config.BOSH.SkipSSLValidation,
 	})
 }

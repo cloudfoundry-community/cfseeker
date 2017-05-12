@@ -24,7 +24,7 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-community/gogobosh",
-			"Rev": "db8abad403542f4114812bbdcaafbe17d52ccfb3"
+			"Rev": "7a868fc46cf68ca8e71bd1426f0bdf95927d7e3d"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
@@ -76,6 +76,22 @@
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
 			"Rev": "f7716cbe52baa25d2e9b0d0da546fcf909fc16b4"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry-community/gogobosh/vendor/golang.org/x/net/context",
+			"Rev": "7a868fc46cf68ca8e71bd1426f0bdf95927d7e3d"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry-community/gogobosh/vendor/golang.org/x/oauth2",
+			"Rev": "7a868fc46cf68ca8e71bd1426f0bdf95927d7e3d"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry-community/gogobosh/vendor/golang.org/x/oauth2/clientcredentials",
+			"Rev": "7a868fc46cf68ca8e71bd1426f0bdf95927d7e3d"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry-community/gogobosh/vendor/golang.org/x/oauth2/internal",
+			"Rev": "7a868fc46cf68ca8e71bd1426f0bdf95927d7e3d"
 		}
 	]
 }
