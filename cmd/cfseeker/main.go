@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	cmdLine = kingpin.New("cf-seeker", "Do you know where your CF apps are?").Version(config.Version)
+	cmdLine = kingpin.New("cfseeker", "Do you know where your CF apps are?").Version(config.Version)
 	//Global flags
 	configPath = cmdLine.Flag("config", "Path to a config file to load").Short('c').Default("./seekerconf.yml").Envar("SEEKERCONF").String()
 	debugFlag  = cmdLine.Flag("debug", "Turn debug output on").Short('d').Bool()
