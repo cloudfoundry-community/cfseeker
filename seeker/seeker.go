@@ -57,7 +57,7 @@ func (s *Seeker) getCFClientFromConfig() (client *cfclient.Client, err error) {
 		ApiAddress:        s.config.CF.APIAddress,
 		ClientID:          s.config.CF.ClientID,
 		ClientSecret:      s.config.CF.ClientSecret,
-		HttpClient:        &http.Client{Timeout: time.Second * 30},
+		HttpClient:        &http.Client{Timeout: time.Second * time.Duration(s.config.HTTPTimeout)},
 		SkipSslValidation: s.config.CF.SkipSSLValidation,
 		UserAgent:         "Go-CF-client/1.1",
 	})
@@ -73,7 +73,7 @@ func (s *Seeker) getBOSHClientFromConfig() (client *gogobosh.Client, err error) 
 		Password:          s.config.BOSH.Password,
 		ClientID:          s.config.BOSH.ClientID,
 		ClientSecret:      s.config.BOSH.ClientSecret,
-		HttpClient:        &http.Client{Timeout: time.Second * 15},
+		HttpClient:        &http.Client{Timeout: time.Second * time.Duration(s.config.HTTPTimeout)},
 		SkipSslValidation: s.config.BOSH.SkipSSLValidation,
 	})
 }

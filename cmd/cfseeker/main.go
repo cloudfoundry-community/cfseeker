@@ -107,6 +107,7 @@ func initializeConfig() (*config.Config, error) {
 	var ret config.Config
 	//Set defaults
 	ret.Server.CacheTTL = 60 * 15 //15 Minutes
+	ret.HTTPTimeout = 15          //15 seconds
 	err = yaml.Unmarshal(configBytes, &ret)
 	if err != nil {
 		return nil, fmt.Errorf("Error while parsing config YAML: %s", err.Error())

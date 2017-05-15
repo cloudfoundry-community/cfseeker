@@ -11,9 +11,10 @@ func init() {
 
 //Config contains all the information needed for the seeker backend to operate
 type Config struct {
-	CF     CFConfig     `yaml:"cf"`
-	BOSH   BOSHConfig   `yaml:"bosh"`
-	Server ServerConfig `yaml:"server"`
+	CF          CFConfig     `yaml:"cf"`
+	BOSH        BOSHConfig   `yaml:"bosh"`
+	Server      ServerConfig `yaml:"server"`
+	HTTPTimeout int          `yaml:"http_timeout"`
 }
 
 //CFConfig contains location and authorization info about a target Cloud Foundry
