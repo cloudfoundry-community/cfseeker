@@ -11,7 +11,7 @@ import (
 
 //VMCache contains the fields needed for caching VM information
 type VMCache struct {
-	data        map[string]VMInfo
+	data        map[string]*VMInfo
 	deployments map[string]*deploymentEntry //not nil if cached
 	ttl         time.Duration
 	lock        sync.Mutex
@@ -32,7 +32,7 @@ type VMInfo struct {
 
 func newVMCache() *VMCache {
 	return &VMCache{
-		data:        map[string]VMInfo{},
+		data:        map[string]*VMInfo{},
 		deployments: map[string]*deploymentEntry{},
 		ttl:         -1,
 	}
@@ -48,39 +48,37 @@ func (s *Seeker) GetVMWithIP(ip string) (vm *VMInfo, err error) {
 	if err != nil {
 		return
 	}
-	s.acquireLock()
-	defer s.releaseLock()
-	tmpVM, found := s.vmcache.getFromCache(ip)
-	if found {
+
+	//Attempt to get from cache
+	vm = s.getFromCache(ip)
+	if vm != nil {
 		log.Debugf("Cache HIT for VM with IP (%s)", ip)
-		vm = &tmpVM
 		return
 	}
 	log.Debugf("Cache MISS for VM with IP (%s)", ip)
+
 	//If we're here, we need to (try to) fetch the VM from BOSH
-	err = s.cacheUntil(ip)
+	vm, err = s.cacheUntil(ip)
 	if err != nil {
 		err = fmt.Errorf("Error fetching VMs: %s", err.Error())
 		return
 	}
-
-	log.Debugf("Checking for VM with IP (%s) after fetching data", ip)
-	//Don't run through getFromCache here to avoid potential cache timeout
-	tmpVM, found = s.vmcache.data[ip]
-	if found {
+	if vm != nil {
 		log.Debugf("Found VM with IP (%s) after fetching", ip)
-		vm = &tmpVM
 		return
 	}
+
 	log.Debugf("Could not find VM with IP (%s). Refreshing cache...", ip)
 	s.InvalidateAll()
+
 	//refresh cache
-	err = s.cacheUntil(ip)
-	//Don't run through getFromCache here to avoid potential cache timeout
-	tmpVM, found = s.vmcache.data[ip]
-	if found {
+	vm, err = s.cacheUntil(ip)
+	if err != nil {
+		err = fmt.Errorf("Error fetching VMs: %s", err.Error())
+	}
+
+	if vm != nil {
 		log.Debugf("Found VM with IP (%s) after cache refresh", ip)
-		vm = &tmpVM
 	} else {
 		log.Debugf("Could not find VM with IP (%s). Are your deployments configured correctly?", ip)
 	}
@@ -93,23 +91,27 @@ func (s *Seeker) SetTTL(ttl time.Duration) {
 	s.vmcache.ttl = ttl
 }
 
-//SYNC: Lock should be acquired upon calling this
-func (c *VMCache) getFromCache(host string) (ret VMInfo, found bool) {
-	if ret, found = c.data[host]; found {
+func (s *Seeker) getFromCache(host string) (ret *VMInfo) {
+	s.acquireLock()
+	defer s.releaseLock()
+	c := s.vmcache
+	if ret = c.data[host]; ret != nil {
 		dep := c.deployments[ret.DeploymentName]
 		if age := time.Since(dep.cachedAt); c.ttl >= 0 && age >= c.ttl {
 			log.Debugf("Cached deployment (%s) deemed stale. Age: %s, TTL: %s", ret.DeploymentName, age, c.ttl)
-			c.invalidateDeployment(ret.DeploymentName)
-			found = false
+			s.invalidateDeployment(ret.DeploymentName)
+			ret = nil
 		}
 	}
 	return
 }
 
-//SYNC: Lock should be acquired upon calling this
 // Panicks if deployment isn't cached
-func (c *VMCache) invalidateDeployment(name string) {
+func (s *Seeker) invalidateDeployment(name string) {
 	log.Debugf("Invalidating cache for deployment (%s)", name)
+	c := s.vmcache
+	s.acquireLock()
+	defer s.releaseLock()
 	dep, found := c.deployments[name]
 	if !found {
 		panic(fmt.Sprintf("Tried to delete cache for unknown deployment: %s", name))
@@ -125,9 +127,8 @@ func (c *VMCache) invalidateDeployment(name string) {
 //This function will cycle through uncached deployments, storing their vm info
 // until getting to the relevant deployment with the ip we need.
 // It will only search in deployments that aren't already cached.
-//
-// SYNC: It is assumed that the lock is held by the caller of this function
-func (s *Seeker) cacheUntil(ip string) (err error) {
+// Returns the VMInfo if it is found
+func (s *Seeker) cacheUntil(ip string) (ret *VMInfo, err error) {
 	log.Debugf("Attempting fetch of VM with IP (%s)", ip)
 
 	ip, err = canonizeIP(ip)
@@ -145,22 +146,25 @@ func (s *Seeker) cacheUntil(ip string) (err error) {
 		log.Debugf("Contacting BOSH Director for VMs in deployment with name (%s)", dep)
 		vms, err = s.bosh.GetDeploymentVMs(dep)
 		if err != nil {
-			return fmt.Errorf("Error while getting VMs for deployment `%s`: %s", dep, err.Error())
+			return ret, fmt.Errorf("Error while getting VMs for deployment `%s`: %s", dep, err.Error())
 		}
 
 		log.Debugf("Inserting VMs into local memory cache")
 
 		vmsInDeployment := []string{}
+
+		s.acquireLock()
 		//Populate the cache with the VMs we got
 		for _, vm := range vms {
 			//Cache every ip address for this VM as this VM
 			for idx, ip := range vm.IPs {
 				vm.IPs[idx], err = canonizeIP(ip)
 				if err != nil {
+					s.releaseLock()
 					return
 				}
 				vmsInDeployment = append(vmsInDeployment, ip)
-				s.vmcache.data[ip] = VMInfo{
+				s.vmcache.data[ip] = &VMInfo{
 					JobName:        vm.JobName,
 					DeploymentName: dep,
 					IP:             ip,
@@ -177,10 +181,12 @@ func (s *Seeker) cacheUntil(ip string) (err error) {
 		}
 
 		//Bail out if we got our target ip
-		if _, found := s.vmcache.data[ip]; found {
+		if vm, found := s.vmcache.data[ip]; found {
 			log.Debugf("Found target IP (%s) in deployment (%s)", ip, dep)
-			return
+			s.releaseLock()
+			return vm, nil
 		}
+		s.releaseLock()
 	}
 	log.Debugf("Fetched all deployments but didn't find IP (%s)", ip)
 	return
@@ -191,7 +197,7 @@ func (s *Seeker) InvalidateAll() {
 	log.Debugf("Invalidating cache for Seeker (%p)", s)
 	s.acquireLock()
 	defer s.releaseLock()
-	s.vmcache.data = map[string]VMInfo{}
+	s.vmcache.data = map[string]*VMInfo{}
 	s.vmcache.deployments = map[string]*deploymentEntry{}
 	log.Debugf("Cache invalidated for Seeker (%p)", s)
 }
