@@ -106,12 +106,12 @@ func (s *Seeker) getFromCache(host string) (ret *VMInfo) {
 	return
 }
 
+// Just a helper function that invalidates a single dep.
 // Panicks if deployment isn't cached
+// SYNC: Expected that you have the lock when you call this function.
 func (s *Seeker) invalidateDeployment(name string) {
 	log.Debugf("Invalidating cache for deployment (%s)", name)
 	c := s.vmcache
-	s.acquireLock()
-	defer s.releaseLock()
 	dep, found := c.deployments[name]
 	if !found {
 		panic(fmt.Sprintf("Tried to delete cache for unknown deployment: %s", name))
@@ -203,11 +203,12 @@ func (s *Seeker) InvalidateAll() {
 }
 
 func (s *Seeker) acquireLock() {
-	log.Debugf("Acquiring lock for Seeker (%p)", s)
+	log.Debugf("Acquiring lock for Seeker (%p)...", s)
 	s.vmcache.lock.Lock()
+	log.Debugf("Lock acquired (%p)")
 }
 
 func (s *Seeker) releaseLock() {
-	log.Debugf("Releasing lock for Seeker (%p)", s)
 	s.vmcache.lock.Unlock()
+	log.Debugf("Released lock for Seeker (%p)", s)
 }
