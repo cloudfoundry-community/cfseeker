@@ -138,6 +138,9 @@ func getCLIFn(command string) (toRun commandFn, toInput interface{}) {
 	case "invalidate":
 		toRun = cliRequest(invalidateCLICommand)
 		toInput = nil
+	case "info", "meta":
+		toRun = cliRequest(infoCLICommand)
+		toInput = nil
 	}
 	return
 }
@@ -160,6 +163,11 @@ func findCLICommand(input interface{}) (method, uri string, output interface{}) 
 func invalidateCLICommand(input interface{}) (method, uri string, output interface{}) {
 	(*targetFlag).Path = api.InvalidateBOSHEndpoint
 	return "DELETE", (*targetFlag).String(), noOutput{}
+}
+
+func infoCLICommand(input interface{}) (method, uri string, output interface{}) {
+	(*targetFlag).Path = api.MetaEndpoint
+	return "GET", (*targetFlag).String(), api.MetaOutput{}
 }
 
 type noOutput struct {

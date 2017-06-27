@@ -38,6 +38,9 @@ var (
 	//INVALIDATE
 	invalidateCom = cmdLine.Command("invalidate", "Invalidate the BOSH cache on a cfseeker server")
 
+	//INFO
+	infoCom = cmdLine.Command("info", "Gives info about a running cfseeker server").Alias("meta")
+
 	// //LIST
 	// listCom = cmdLine.Command("list", "List all the apps on a given BOSH VM")
 	// vmList  = listCom.Flag("vm", "The vm name to list instances for (<jobname>/<index>)").Required().String()
