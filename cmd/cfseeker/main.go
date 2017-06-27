@@ -34,6 +34,10 @@ var (
 	//SERVER
 	serverCom    = cmdLine.Command("server", "Run cfseeker in server mode")
 	cfModeServer = cmdLine.Flag("cf", "Override port in config to use PORT environment variable").Bool()
+
+	//INVALIDATE
+	invalidateCom = cmdLine.Command("invalidate", "Invalidate the BOSH cache on a cfseeker server")
+
 	// //LIST
 	// listCom = cmdLine.Command("list", "List all the apps on a given BOSH VM")
 	// vmList  = listCom.Flag("vm", "The vm name to list instances for (<jobname>/<index>)").Required().String()

@@ -77,6 +77,13 @@ func cliRequest(cmdInfo func(interface{}) (string, string, interface{})) command
 		if non2xxCode { //Tell the user why their request 400'd or 500'd or whatever
 			return nil, fmt.Errorf("Error given from API Request: %s", apiResponse.Meta.Error)
 		}
+
+		if outStruct, isNoOutput := output.(noOutput); isNoOutput {
+			if apiResponse.Meta != nil {
+				outStruct.Message = apiResponse.Meta.Message
+				apiResponse.Contents = outStruct
+			}
+		}
 		//Otherwise, give them back what they asked for
 		return apiResponse.Contents, nil
 	}
@@ -128,6 +135,9 @@ func getCLIFn(command string) (toRun commandFn, toInput interface{}) {
 		}
 	case "server":
 		bailWith("Refusing to run server mode with --target (-t) flag set")
+	case "invalidate":
+		toRun = cliRequest(invalidateCLICommand)
+		toInput = nil
 	}
 	return
 }
@@ -145,4 +155,13 @@ func findCLICommand(input interface{}) (method, uri string, output interface{}) 
 	(*targetFlag).RawQuery = query.Encode()
 
 	return "GET", (*targetFlag).String(), commands.FindOutput{}
+}
+
+func invalidateCLICommand(input interface{}) (method, uri string, output interface{}) {
+	(*targetFlag).Path = api.InvalidateBOSHEndpoint
+	return "DELETE", (*targetFlag).String(), noOutput{}
+}
+
+type noOutput struct {
+	Message string `json:"message,omitempty"`
 }

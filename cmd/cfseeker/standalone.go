@@ -24,6 +24,8 @@ func getStandaloneFn(command string) (toRun commandFn, toInput interface{}) {
 	case "server":
 		toRun = serverCommand
 		toInput = serverInput{conf: conf}
+	case "invalidate":
+		bailWith("Cannot run invalidate command without --target (-t) set")
 	}
 	return
 }
