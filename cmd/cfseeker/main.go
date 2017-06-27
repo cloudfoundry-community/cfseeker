@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/cloudfoundry-community/cfseeker/commands"
 	"github.com/cloudfoundry-community/cfseeker/config"
 	"github.com/starkandwayne/goutils/ansi"
 	"github.com/starkandwayne/goutils/log"
@@ -18,9 +17,12 @@ import (
 var (
 	cmdLine = kingpin.New("cfseeker", "Do you know where your CF apps are?").Version(config.Version)
 	//Global flags
-	configPath = cmdLine.Flag("config", "Path to a config file to load").Short('c').Default("./seekerconf.yml").Envar("SEEKERCONF").String()
-	debugFlag  = cmdLine.Flag("debug", "Turn debug output on").Short('d').Bool()
-	jsonFlag   = cmdLine.Flag("json", "Give output in JSON instead of YAML").Short('j').Bool()
+	configPath   = cmdLine.Flag("config", "Path to a config file to load").Short('c').Default("./seekerconf.yml").Envar("SEEKERCONF").String()
+	debugFlag    = cmdLine.Flag("debug", "Turn debug output on").Short('d').Bool()
+	jsonFlag     = cmdLine.Flag("json", "Give output in JSON instead of YAML").Short('j').Bool()
+	targetFlag   = cmdLine.Flag("target", "URL to target in CLI mode").Short('t').URL()
+	usernameFlag = cmdLine.Flag("username", "Username for basic auth in CLI mode").Short('u').String()
+	passwordFlag = cmdLine.Flag("password", "Password for basic auth in CLI mode. Will prompt if not given").Short('p').String()
 
 	//FIND
 	findCom     = cmdLine.Command("find", "Get the location of an app")
@@ -37,6 +39,8 @@ var (
 	// vmList  = listCom.Flag("vm", "The vm name to list instances for (<jobname>/<index>)").Required().String()
 	conf *config.Config
 )
+
+type commandFn func(inputs interface{}) (interface{}, error)
 
 func main() {
 	cmdLine.HelpFlag.Short('h')
@@ -55,18 +59,11 @@ func main() {
 	var toRun commandFn
 	var toInput interface{}
 
-	switch command {
-	case "find":
-		toRun = findCommand
-		toInput = commands.FindInput{
-			AppGUID:   *appGUIDFind,
-			OrgName:   *orgFind,
-			SpaceName: *spaceFind,
-			AppName:   *appNameFind,
-		}
-	case "server":
-		toRun = serverCommand
-		toInput = serverInput{conf: conf}
+	if targetIsSet() { //CLI mode
+		validateTargetURI() //Bails if not valid
+		toRun, toInput = getCLIFn(command)
+	} else { //standalone or server mode
+		toRun, toInput = getStandaloneFn(command)
 	}
 
 	log.Debugf("Dispatching to user command")
@@ -114,6 +111,19 @@ func initializeConfig() (*config.Config, error) {
 	}
 
 	return &ret, nil
+}
+
+func targetIsSet() bool {
+	return targetFlag != nil && *targetFlag != nil && (*targetFlag).Host != ""
+}
+
+func validateTargetURI() {
+	if (*targetFlag).Host == "" {
+		bailWith("Host not given in target URI")
+	}
+	if (*targetFlag).Scheme == "" {
+		bailWith("Scheme (http / https) not given in target URI")
+	}
 }
 
 func setupLogging() {

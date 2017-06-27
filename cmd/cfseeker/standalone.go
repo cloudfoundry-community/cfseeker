@@ -11,7 +11,22 @@ import (
 	"github.com/cloudfoundry-community/cfseeker/seeker"
 )
 
-type commandFn func(inputs interface{}) (interface{}, error)
+func getStandaloneFn(command string) (toRun commandFn, toInput interface{}) {
+	switch command {
+	case "find":
+		toRun = findCommand
+		toInput = commands.FindInput{
+			AppGUID:   *appGUIDFind,
+			OrgName:   *orgFind,
+			SpaceName: *spaceFind,
+			AppName:   *appNameFind,
+		}
+	case "server":
+		toRun = serverCommand
+		toInput = serverInput{conf: conf}
+	}
+	return
+}
 
 func findCommand(input interface{}) (interface{}, error) {
 	in := input.(commands.FindInput)
