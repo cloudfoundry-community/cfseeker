@@ -114,15 +114,15 @@ func initializeConfig() (*config.Config, error) {
 }
 
 func targetIsSet() bool {
-	return targetFlag != nil && *targetFlag != nil && (*targetFlag).Host != ""
+	return targetFlag != nil && *targetFlag != nil
 }
 
 func validateTargetURI() {
-	if (*targetFlag).Host == "" {
-		bailWith("Host not given in target URI")
-	}
 	if (*targetFlag).Scheme == "" {
 		bailWith("Scheme (http / https) not given in target URI")
+	}
+	if (*targetFlag).Host == "" {
+		bailWith("Host not given in target URI")
 	}
 }
 
