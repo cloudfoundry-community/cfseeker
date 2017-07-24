@@ -33,7 +33,7 @@ var (
 
 	//SERVER
 	serverCom    = cmdLine.Command("server", "Run cfseeker in server mode")
-	cfModeServer = cmdLine.Flag("cf", "Override port in config to use PORT environment variable").Bool()
+	cfModeServer = serverCom.Flag("cf", "Override port in config to use PORT environment variable").Bool()
 
 	//INVALIDATE
 	invalidateCom = cmdLine.Command("invalidate", "Invalidate the BOSH cache on a cfseeker server")
