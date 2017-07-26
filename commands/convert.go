@@ -76,7 +76,7 @@ type ConvertOutput struct {
 	// requested
 	AppName string `yaml:"app_name,omitempty" json:"app_name,omitempty"`
 	//Type of resource returned. One of `app`, `space`, or `org`
-	Type string
+	Type string `yaml:"type" json:"type"`
 }
 
 var (
