@@ -51,6 +51,8 @@ func getStandaloneFn(command string) (toRun commandFn, toInput interface{}) {
 			SpaceName: *spaceNameAppConv,
 			AppName:   *appNameAppConv,
 		}
+	default:
+		bailWith("Unrecognized command: %s", command)
 	}
 	return
 }

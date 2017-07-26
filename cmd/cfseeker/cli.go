@@ -141,9 +141,31 @@ func getCLIFn(command string) (toRun commandFn, toInput interface{}) {
 	case "info", "meta":
 		toRun = cliRequest(infoCLICommand)
 		toInput = nil
-	case "convert org", "convert space", "convert app":
+	case "convert guid":
 		toRun = cliRequest(convertCLICommand)
-		toInput = nil
+		toInput = commands.ConvertInput{
+			GUID: *guidGUIDConv,
+		}
+	case "convert org":
+		toRun = cliRequest(convertCLICommand)
+		toInput = commands.ConvertInput{
+			OrgName: *orgNameOrgConv,
+		}
+	case "convert space":
+		toRun = cliRequest(convertCLICommand)
+		toInput = commands.ConvertInput{
+			OrgName:   *orgNameSpaceConv,
+			SpaceName: *spaceNameSpaceConv,
+		}
+	case "convert app":
+		toRun = cliRequest(convertCLICommand)
+		toInput = commands.ConvertInput{
+			OrgName:   *orgNameAppConv,
+			SpaceName: *spaceNameAppConv,
+			AppName:   *appNameAppConv,
+		}
+	default:
+		bailWith("Unrecognized command: %s", command)
 	}
 	return
 }
@@ -174,9 +196,17 @@ func infoCLICommand(input interface{}) (method, uri string, output interface{}) 
 }
 
 func convertCLICommand(input interface{}) (method, uri string, output interface{}) {
-	//in := input.(commands.ConvertInput)
-	//TODO: Write this
-	panic("Not yet implemented")
+	in := input.(commands.ConvertInput)
+
+	//Form the request uri
+	(*targetFlag).Path = api.ConvertEndpoint
+	query := (*targetFlag).Query()
+	query.Set(api.ConvertGUIDKey, in.GUID)
+	query.Set(api.ConvertOrgNameKey, in.OrgName)
+	query.Set(api.ConvertSpaceNameKey, in.SpaceName)
+	query.Set(api.ConvertAppNameKey, in.AppName)
+	(*targetFlag).RawQuery = query.Encode()
+	return "GET", (*targetFlag).String(), commands.ConvertOutput{}
 }
 
 type noOutput struct {
