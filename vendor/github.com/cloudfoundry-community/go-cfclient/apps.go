@@ -175,9 +175,21 @@ func (a *App) Space() (Space, error) {
 }
 
 func (c *Client) ListAppsByQuery(query url.Values) ([]App, error) {
-	var apps []App
+	return c.listApps("/v2/apps?" + query.Encode())
+}
 
-	requestUrl := "/v2/apps?" + query.Encode()
+func (c *Client) ListApps() ([]App, error) {
+	q := url.Values{}
+	q.Set("inline-relations-depth", "2")
+	return c.ListAppsByQuery(q)
+}
+
+func (c *Client) ListAppsByRoute(routeGuid string) ([]App, error) {
+	return c.listApps(fmt.Sprintf("/v2/routes/%s/apps", routeGuid))
+}
+
+func (c *Client) listApps(requestUrl string) ([]App, error) {
+	apps := []App{}
 	for {
 		var appResp AppResponse
 		r := c.NewRequest("GET", requestUrl)
@@ -212,12 +224,6 @@ func (c *Client) ListAppsByQuery(query url.Values) ([]App, error) {
 		}
 	}
 	return apps, nil
-}
-
-func (c *Client) ListApps() ([]App, error) {
-	q := url.Values{}
-	q.Set("inline-relations-depth", "2")
-	return c.ListAppsByQuery(q)
 }
 
 func (c *Client) GetAppInstances(guid string) (map[string]AppInstance, error) {
@@ -301,7 +307,7 @@ func (c *Client) KillAppInstance(guid string, index string) error {
 	return nil
 }
 
-func (c *Client) AppByGuid(guid string) (App, error) {
+func (c *Client) GetAppByGuid(guid string) (App, error) {
 	var appResource AppResource
 	r := c.NewRequest("GET", "/v2/apps/"+guid+"?inline-relations-depth=2")
 	resp, err := c.DoRequest(r)
@@ -323,6 +329,10 @@ func (c *Client) AppByGuid(guid string) (App, error) {
 	appResource.Entity.SpaceData.Entity.OrgData.Entity.Guid = appResource.Entity.SpaceData.Entity.OrgData.Meta.Guid
 	appResource.Entity.c = c
 	return appResource.Entity, nil
+}
+
+func (c *Client) AppByGuid(guid string) (App, error) {
+	return c.GetAppByGuid(guid)
 }
 
 //AppByName takes an appName, and GUIDs for a space and org, and performs

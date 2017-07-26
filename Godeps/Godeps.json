@@ -20,7 +20,7 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-community/go-cfclient",
-			"Rev": "a7d44cb5dabc925e9390cf0b90112020a162d4ed"
+			"Rev": "8035404db0b663d6ea9aee965dbd28c016bd250a"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-community/gogobosh",
