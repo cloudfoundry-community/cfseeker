@@ -141,6 +141,9 @@ func getCLIFn(command string) (toRun commandFn, toInput interface{}) {
 	case "info", "meta":
 		toRun = cliRequest(infoCLICommand)
 		toInput = nil
+	case "convert org", "convert space", "convert app":
+		toRun = cliRequest(convertCLICommand)
+		toInput = nil
 	}
 	return
 }
@@ -168,6 +171,12 @@ func invalidateCLICommand(input interface{}) (method, uri string, output interfa
 func infoCLICommand(input interface{}) (method, uri string, output interface{}) {
 	(*targetFlag).Path = api.MetaEndpoint
 	return "GET", (*targetFlag).String(), api.MetaOutput{}
+}
+
+func convertCLICommand(input interface{}) (method, uri string, output interface{}) {
+	//in := input.(commands.ConvertInput)
+	//TODO: Write this
+	panic("Not yet implemented")
 }
 
 type noOutput struct {

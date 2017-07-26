@@ -28,6 +28,29 @@ func getStandaloneFn(command string) (toRun commandFn, toInput interface{}) {
 		bailWith("Cannot run invalidate command without --target (-t) set")
 	case "info", "meta":
 		bailWith("Cannot run info command without --target (-t) set")
+	case "convert guid":
+		toRun = convertCommand
+		toInput = commands.ConvertInput{
+			GUID: *guidGUIDConv,
+		}
+	case "convert org":
+		toRun = convertCommand
+		toInput = commands.ConvertInput{
+			OrgName: *orgNameOrgConv,
+		}
+	case "convert space":
+		toRun = convertCommand
+		toInput = commands.ConvertInput{
+			OrgName:   *orgNameSpaceConv,
+			SpaceName: *spaceNameSpaceConv,
+		}
+	case "convert app":
+		toRun = convertCommand
+		toInput = commands.ConvertInput{
+			OrgName:   *orgNameAppConv,
+			SpaceName: *spaceNameAppConv,
+			AppName:   *appNameAppConv,
+		}
 	}
 	return
 }
@@ -57,4 +80,15 @@ func serverCommand(input interface{}) (interface{}, error) {
 	}
 	err = api.Initialize(in.conf) //Never exits without an error
 	return nil, err
+}
+
+func convertCommand(input interface{}) (interface{}, error) {
+	var err error
+	in := input.(commands.ConvertInput)
+	conf.SkipBOSH()
+	s, err := seeker.NewSeeker(conf)
+	if err != nil {
+		return nil, err
+	}
+	return commands.Convert(s, in)
 }

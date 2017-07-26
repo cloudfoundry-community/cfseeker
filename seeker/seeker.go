@@ -14,7 +14,7 @@ import (
 //Seeker has constructs and functions necessary to find app locations in Cloud
 // Foundry
 type Seeker struct {
-	cf      *cfclient.Client
+	CF      *cfclient.Client
 	bosh    *gogobosh.Client
 	config  *config.Config
 	vmcache *VMCache
@@ -27,7 +27,7 @@ func NewSeeker(conf *config.Config) (ret *Seeker, err error) {
 	ret.config = conf
 
 	log.Debugf("Setting up CF Client")
-	ret.cf, err = ret.getCFClientFromConfig()
+	ret.CF, err = ret.getCFClientFromConfig()
 	if err != nil {
 		return nil, fmt.Errorf("Error connecting to Cloud Foundry API: %s", err.Error())
 	}

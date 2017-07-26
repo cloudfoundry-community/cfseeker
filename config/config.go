@@ -50,3 +50,8 @@ type BasicAuthConfig struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 }
+
+//SkipBOSH sets the seeker config to not connect to BOSH
+func (c *Config) SkipBOSH() {
+	c.BOSH.SkipBOSH = true
+}
