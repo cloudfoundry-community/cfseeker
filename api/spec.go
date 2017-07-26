@@ -11,4 +11,6 @@ const (
 	InvalidateBOSHEndpoint = "/v1/cache/bosh"
 	//WebEndpoint is the path to the web UI
 	WebEndpoint = "/"
+	//ConvertEndpoint is the path corresponding to the Convert API call
+	ConvertEndpoint = "/v1/convert"
 )

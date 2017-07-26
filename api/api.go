@@ -62,6 +62,7 @@ func Initialize(conf *config.Config) (err error) {
 	router.HandleFunc(MetaEndpoint, metaHandler).Methods("GET")
 	router.HandleFunc(FindEndpoint, auth(findHandler)).Methods("GET")
 	router.HandleFunc(InvalidateBOSHEndpoint, auth(invalidateBOSHCacheHandler)).Methods("DELETE")
+	router.HandleFunc(ConvertEndpoint, auth(convertHandler)).Methods("GET")
 	router.HandleFunc(WebEndpoint, auth(webHandler)).Methods("GET")
 	router.PathPrefix("/web").Handler(http.StripPrefix("/web", auth(webHandler)))
 

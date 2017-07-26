@@ -93,6 +93,11 @@ var (
 // the names of the org/space/app which the GUID represents, and the names/GUIDs
 // of the resources above it with their GUIDs and names
 func Convert(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+	err = in.Validate()
+	if err != nil {
+		return
+	}
+
 	switch {
 	case in.shouldConvGUID():
 		out, err = convGUID(s, in)
@@ -103,8 +108,9 @@ func Convert(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
 	case in.shouldConvApp():
 		out, err = convApp(s, in)
 	default:
-		err = in.Validate()
+		panic("Validated input did not correspond to a code path in Convert")
 	}
+
 	return
 }
 
