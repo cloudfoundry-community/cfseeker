@@ -19,7 +19,7 @@
       display: none;
     }
 
-    .appmeta {
+    .searchedfor {
       border: medium solid grey;
       background-color: lightgreen;
       border-radius: 5px;
@@ -27,7 +27,7 @@
       margin: 2px;
     }
 
-    .appinstance {
+    .resultgroup {
       border: medium double grey;
       background-color: lightyellow;
       border-radius: 5px;
@@ -51,16 +51,16 @@
     <div id="navigation" role="navigation">
       <ul class="nav nav-tabs">
         <li role="presentation"><a href="/web/index.html">Home</a></li>
-        <li role="presentation" class="active"><a href="/web/find/index.html">Find</a></li>
-        <li role="presentation"><a href="/web/convert/index.html">Convert</a></li>
+        <li role="presentation"><a href="/web/find/index.html">Find</a></li>
+        <li role="presentation" class="active"><a href="/web/convert/index.html">Convert</a></li>
       </ul>
     </div>
 
-    <p class="lead">Find your apps by completing a set of the fields below and hitting submit</p>
+    <p class="lead">Let's convert a GUID to names or Vice Versa by filling out a set of the fields below</p>
     <div class="row">
       <div class="col-md-5">
-        <h3 class="text-center">By Org, Space, and Name</h3>
-        <form class="findform" action="/v1/apps">
+        <h3 class="text-center">By Org, Space, and/or App Names</h3>
+        <form class="convertform" action="/v1/convert">
           <input type="text" class="form-control" name="org_name" placeholder="Organization Name"><br>
           <input type="text" class="form-control" name="space_name" placeholder="Space Name"><br>
           <input type="text" class="form-control" name="app_name" placeholder="App Name"><br>
@@ -70,15 +70,15 @@
         <h2 class="text-center">-OR-</h2>
       </div>
       <div class="col-md-5">
-        <h3 class="text-center">By App GUID</h3>
-        <form class="findform" action="/v1/apps">
-          <input type="text" class="form-control" name="app_guid" placeholder="App GUID"><br>
+        <h3 class="text-center">By GUID</h3>
+        <form class="convertform" action="/v1/convert">
+          <input type="text" class="form-control" name="guid" placeholder="Org, Space, or App GUID"><br>
         </form>
       </div>
     </div>
     <div class="row">
       <div class="col-md-11">
-        <form class="findform" action="/v1/apps">
+        <form class="convertform" action="/v1/apps">
           <input type="submit" class="btn btn-block" value="submit">
         </form>
       </div>
@@ -98,37 +98,41 @@
       <p id="resultbody"></p>
     </div>
     <script>
-      function appMeta(name, guid) {
-        return '<div class="row"><div class="col-md-6 appmeta container">' +
+      function resultHeader(text) {
+        return `<div class="row"><div class="col-md-6 text-center"><h4>` + text + `</h4></div></div>`
+      }
+
+      function resultGroup(guid, name) {
+        return '<div class="row"><div class="col-md-6 resultgroup container">' +
           "<b> Name:</b> " + name + "<br>" +
           "<b>GUID:</b> " + guid + "<br>" +
           '</div></div>'
       }
 
-      function appInstance(inst) {
-        var html = '<div class="row"><div class="col-md-6 appinstance container">' +
-          "<b>Host:</b> " + inst["host"] + "<br>" +
-          "<b>Port:</b> " + inst["port"] + "<br>"
-        if ("vm_name" in inst && "deployment" in inst) {
-          html = html + "<b>VM Name:</b> " + inst["vm_name"] + "<br>" +
-            "<b>Deployment:</b> " + inst["deployment"] + "<br>"
-        }
-        html = html + "</div></div>"
-        return html
+      function orgResult(contents) {
+        return resultHeader("Organization") + resultGroup(contents["org_guid"], contents["org_name"])
+      }
+
+      function spaceResult(contents) {
+        return resultHeader("Space") + resultGroup(contents["space_guid"], contents["space_name"])
+      }
+
+      function appResult(contents) {
+        return resultHeader("Application") + resultGroup(contents["app_guid"], contents["app_name"])
       }
 
       function successfulFind(json, status, j) {
         var contents = json["contents"]
         //Use the response to make HTML under the results section
-        var html = appMeta(contents.name, contents.guid)
-        html = html + `<div class="row">
-      <div class="col-md-6 text-center"><h4>Instances</h4></div>
-      </div>`
-        var instances = contents["instances"]
-        //Make the html for each of the instances
-        for (var i = 0; i < contents["count"]; i++) {
-          var inst = instances[i]
-          html = html + appInstance(inst)
+        var html = '<div class="row"><div class="col-md-6 searchedfor container">' +
+          "You searched for: " + contents["type"] +
+          '</div></div>'
+        html += orgResult(contents)
+        if (contents["type"] == "space" || contents["type"] == "app") {
+          html += spaceResult(contents)
+        }
+        if (contents["type"] == "app") {
+          html += appResult(contents)
         }
         $("#resultbody").html(html)
         $("#resultbody").css("background-color", "white")
@@ -139,7 +143,7 @@
         var rawErr = JSON.parse(j.responseText).meta.error
         var finalErr = rawErr.replace("\n", "<br>")
         $("#resultbody").html('<div class="row"><div class="col-md-11 erroroutput"' +
-          "Find failed: " + status + ": " + err + "<br>" + finalErr + '</div></div>')
+          "Convert failed: " + status + ": " + err + "<br>" + finalErr + '</div></div>')
         $("#resultbody").css("background-color", "pink")
         $("#result").show()
       }
@@ -148,17 +152,17 @@
         $("#loading").hide()
       }
 
-      //Do a find form ourselves
-      $(".findform").submit(function (e) {
+      //Do a conversion ourselves
+      $(".convertform").submit(function (e) {
         $("#result").hide()
         $("#loading").show()
         $.ajax({
-          url: "/v1/apps",
+          url: "/v1/convert",
           data: {
             "org_name": $(":input[name=org_name]").val(),
             "space_name": $(":input[name=space_name]").val(),
             "app_name": $(":input[name=app_name]").val(),
-            "app_guid": $(":input[name=app_guid]").val()
+            "guid": $(":input[name=guid]").val()
           },
           success: successfulFind,
           error: erroredFind,
