@@ -105,6 +105,8 @@ func Convert(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) 
 		return
 	}
 
+	out = &ConvertOutput{}
+
 	switch {
 	case in.shouldConvGUID():
 		out, err = convGUID(s, in)
@@ -123,6 +125,7 @@ func Convert(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) 
 
 func convGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning conversion lookup by GUID")
+	out = &ConvertOutput{}
 
 	if out, err = convAppByGUID(s, in); err == nil {
 	} else if out, err = convSpaceByGUID(s, in); err == nil {
@@ -137,6 +140,7 @@ func convGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error)
 
 func convOrgByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Getting org by GUID")
+	out = &ConvertOutput{}
 	org, err := s.CF.GetOrgByGuid(in.GUID)
 	if err != nil {
 		err = fmt.Errorf("Error getting CF Org by GUID: %s", err.Error())
@@ -153,6 +157,7 @@ func convOrgByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err e
 
 func convSpaceByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Getting space by GUID")
+	out = &ConvertOutput{}
 	space, err := s.CF.GetSpaceByGuid(in.GUID)
 	if err != nil {
 		err = fmt.Errorf("Error getting CF Space by GUID: %s", err.Error())
@@ -179,6 +184,7 @@ func convSpaceByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err
 
 func convAppByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Getting app by GUID")
+	out = &ConvertOutput{}
 	app, err := s.CF.GetAppByGuid(in.GUID)
 	if err != nil {
 		err = fmt.Errorf("Error getting CF App by GUID: %s", err.Error())
@@ -215,6 +221,7 @@ func convAppByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err e
 
 func convOrg(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning org conversion lookup")
+	out = &ConvertOutput{}
 	log.Debugf("Getting org by name (%s)", in.OrgName)
 	org, err := s.CF.GetOrgByName(in.OrgName)
 	if err != nil {
@@ -230,6 +237,7 @@ func convOrg(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) 
 
 func convSpace(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning space conversion lookup")
+	out = &ConvertOutput{}
 	//Need the GUID for the org
 	out, err = convOrg(s, in)
 	if err != nil {
@@ -251,6 +259,7 @@ func convSpace(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error
 
 func convApp(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning app conversion lookup")
+	out = &ConvertOutput{}
 	//Need the GUID for the org and space. convSpace does org lookup for us.
 	out, err = convSpace(s, in)
 	if err != nil {
