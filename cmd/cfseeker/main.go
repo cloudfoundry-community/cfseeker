@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/cloudfoundry-community/cfseeker/config"
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 	"github.com/starkandwayne/goutils/ansi"
 	"github.com/starkandwayne/goutils/log"
 
@@ -65,7 +66,7 @@ var (
 	conf *config.Config
 )
 
-type commandFn func(inputs interface{}) (interface{}, error)
+type commandFn func(inputs interface{}) (seeker.Output, error)
 
 func main() {
 	cmdLine.HelpFlag.Short('h')

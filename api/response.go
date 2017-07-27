@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 )
 
 //Response is the structured response of the CFSeeker API
 type Response struct {
-	Meta     *Metadata   `json:"meta,omitempty"`
-	Contents interface{} `json:"contents,omitempty"`
+	Meta     *Metadata     `json:"meta,omitempty"`
+	Contents seeker.Output `json:"contents,omitempty"`
 	writer   http.ResponseWriter
 	code     int
 }
@@ -63,7 +65,7 @@ func (r *Response) Warn(w string) *Response {
 }
 
 //AttachContents takes the given interface and assigns it as the response contents
-func (r *Response) AttachContents(c interface{}) *Response {
+func (r *Response) AttachContents(c seeker.Output) *Response {
 	r.Contents = c
 	return r
 }

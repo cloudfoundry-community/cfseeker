@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -25,6 +26,12 @@ type FindOutput struct {
 	Count     int            `yaml:"count" json:"count"`
 }
 
+//ReceiveJSON makes FindOutput an implementation of SeekerOutput
+func (f *FindOutput) ReceiveJSON(j []byte) (err error) {
+	err = json.Unmarshal(j, f)
+	return
+}
+
 //FindInstance represents information about one instance of an app
 type FindInstance struct {
 	InstanceNumber int    `yaml:"number" json:"number"`
@@ -35,7 +42,7 @@ type FindInstance struct {
 }
 
 //Find determines the location of the app you requests
-func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
+func Find(s *seeker.Seeker, in FindInput) (output *FindOutput, err error) {
 	log.Debugf("Beginning evaluation of find command")
 	ret := FindOutput{}
 	err = validateFindFlags(in)
@@ -79,7 +86,7 @@ func Find(s *seeker.Seeker, in FindInput) (output FindOutput, err error) {
 
 	ret.Count = len(ret.Instances)
 
-	output = ret
+	output = &ret
 	return
 }
 

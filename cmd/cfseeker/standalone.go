@@ -57,7 +57,7 @@ func getStandaloneFn(command string) (toRun commandFn, toInput interface{}) {
 	return
 }
 
-func findCommand(input interface{}) (interface{}, error) {
+func findCommand(input interface{}) (seeker.Output, error) {
 	in := input.(commands.FindInput)
 	s, err := seeker.NewSeeker(conf)
 	if err != nil {
@@ -70,7 +70,7 @@ type serverInput struct {
 	conf *config.Config
 }
 
-func serverCommand(input interface{}) (interface{}, error) {
+func serverCommand(input interface{}) (seeker.Output, error) {
 	var err error
 	in := input.(serverInput)
 	if *cfModeServer {
@@ -84,7 +84,7 @@ func serverCommand(input interface{}) (interface{}, error) {
 	return nil, err
 }
 
-func convertCommand(input interface{}) (interface{}, error) {
+func convertCommand(input interface{}) (seeker.Output, error) {
 	var err error
 	in := input.(commands.ConvertInput)
 	conf.SkipBOSH()

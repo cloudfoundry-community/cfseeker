@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/cloudfoundry-community/cfseeker/seeker"
@@ -79,6 +80,12 @@ type ConvertOutput struct {
 	Type string `yaml:"type" json:"type"`
 }
 
+//ReceiveJSON allows this to implement SeekerOutput
+func (c *ConvertOutput) ReceiveJSON(j []byte) (err error) {
+	err = json.Unmarshal(j, c)
+	return
+}
+
 var (
 	//ConvertTypeOrg indicates that the output returned represents an org
 	ConvertTypeOrg = "org"
@@ -92,7 +99,7 @@ var (
 // the GUIDs associated with each. Alternatively, give it a GUID, and it gives you
 // the names of the org/space/app which the GUID represents, and the names/GUIDs
 // of the resources above it with their GUIDs and names
-func Convert(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func Convert(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	err = in.Validate()
 	if err != nil {
 		return
@@ -114,7 +121,7 @@ func Convert(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
 	return
 }
 
-func convGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func convGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning conversion lookup by GUID")
 
 	if out, err = convAppByGUID(s, in); err == nil {
@@ -128,7 +135,7 @@ func convGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) 
 	return
 }
 
-func convOrgByGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func convOrgByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Getting org by GUID")
 	org, err := s.CF.GetOrgByGuid(in.GUID)
 	if err != nil {
@@ -144,7 +151,7 @@ func convOrgByGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err er
 	return
 }
 
-func convSpaceByGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func convSpaceByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Getting space by GUID")
 	space, err := s.CF.GetSpaceByGuid(in.GUID)
 	if err != nil {
@@ -170,7 +177,7 @@ func convSpaceByGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err 
 	return
 }
 
-func convAppByGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func convAppByGUID(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Getting app by GUID")
 	app, err := s.CF.GetAppByGuid(in.GUID)
 	if err != nil {
@@ -206,7 +213,7 @@ func convAppByGUID(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err er
 	return
 }
 
-func convOrg(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func convOrg(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning org conversion lookup")
 	log.Debugf("Getting org by name (%s)", in.OrgName)
 	org, err := s.CF.GetOrgByName(in.OrgName)
@@ -221,7 +228,7 @@ func convOrg(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
 	return
 }
 
-func convSpace(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func convSpace(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning space conversion lookup")
 	//Need the GUID for the org
 	out, err = convOrg(s, in)
@@ -242,7 +249,7 @@ func convSpace(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error)
 	return
 }
 
-func convApp(s *seeker.Seeker, in ConvertInput) (out ConvertOutput, err error) {
+func convApp(s *seeker.Seeker, in ConvertInput) (out *ConvertOutput, err error) {
 	log.Debugf("Beginning app conversion lookup")
 	//Need the GUID for the org and space. convSpace does org lookup for us.
 	out, err = convSpace(s, in)

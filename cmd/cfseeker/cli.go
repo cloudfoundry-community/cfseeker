@@ -13,6 +13,7 @@ import (
 
 	"github.com/cloudfoundry-community/cfseeker/api"
 	"github.com/cloudfoundry-community/cfseeker/commands"
+	"github.com/cloudfoundry-community/cfseeker/seeker"
 )
 
 // This function is meant to perform any request from the CLI to the API. This
@@ -24,8 +25,8 @@ import (
 // returns a 2xx code). If the HTTP request fails to send, the error will be
 // returned. If a non-2xx code is returned from the API, then an error
 // containing the meta.error key in the JSON response will be returned.
-func cliRequest(cmdInfo func(interface{}) (string, string, interface{})) commandFn {
-	return func(input interface{}) (interface{}, error) {
+func cliRequest(cmdInfo func(interface{}) (string, string, seeker.Output)) commandFn {
+	return func(input interface{}) (seeker.Output, error) {
 		method, uri, output := cmdInfo(input)
 		if output == nil {
 			panic("cmdInfo gave back nil output interface")
@@ -68,8 +69,18 @@ func cliRequest(cmdInfo func(interface{}) (string, string, interface{})) command
 		}
 
 		//Make the HTTP response into a struct we can use
-		apiResponse := api.Response{Contents: output}
+		apiResponse := api.Response{Contents: &mapOutput{}}
 		err = json.Unmarshal(body, &apiResponse)
+		contentsJSON, err := json.Marshal(apiResponse.Contents)
+		if err != nil {
+			panic("Nil contents given to Marshal")
+		}
+		err = output.ReceiveJSON(contentsJSON)
+		if err != nil {
+			panic("Did not give proper JSON to ReceiveJSON")
+		}
+		apiResponse.Contents = output
+
 		if err != nil {
 			return nil, fmt.Errorf("Could not unmarshal JSON response from server: %s", err)
 		}
@@ -78,7 +89,7 @@ func cliRequest(cmdInfo func(interface{}) (string, string, interface{})) command
 			return nil, fmt.Errorf("Error given from API Request: %s", apiResponse.Meta.Error)
 		}
 
-		if outStruct, isNoOutput := output.(noOutput); isNoOutput {
+		if outStruct, isNoOutput := output.(*noOutput); isNoOutput {
 			if apiResponse.Meta != nil {
 				outStruct.Message = apiResponse.Meta.Message
 				apiResponse.Contents = outStruct
@@ -170,7 +181,7 @@ func getCLIFn(command string) (toRun commandFn, toInput interface{}) {
 	return
 }
 
-func findCLICommand(input interface{}) (method, uri string, output interface{}) {
+func findCLICommand(input interface{}) (method, uri string, output seeker.Output) {
 	in := input.(commands.FindInput)
 
 	//Form the request uri
@@ -182,20 +193,20 @@ func findCLICommand(input interface{}) (method, uri string, output interface{}) 
 	query.Set(api.FindAppNameKey, in.AppName)
 	(*targetFlag).RawQuery = query.Encode()
 
-	return "GET", (*targetFlag).String(), commands.FindOutput{}
+	return "GET", (*targetFlag).String(), &commands.FindOutput{}
 }
 
-func invalidateCLICommand(input interface{}) (method, uri string, output interface{}) {
+func invalidateCLICommand(input interface{}) (method, uri string, output seeker.Output) {
 	(*targetFlag).Path = api.InvalidateBOSHEndpoint
-	return "DELETE", (*targetFlag).String(), noOutput{}
+	return "DELETE", (*targetFlag).String(), &noOutput{}
 }
 
-func infoCLICommand(input interface{}) (method, uri string, output interface{}) {
+func infoCLICommand(input interface{}) (method, uri string, output seeker.Output) {
 	(*targetFlag).Path = api.MetaEndpoint
-	return "GET", (*targetFlag).String(), api.MetaOutput{}
+	return "GET", (*targetFlag).String(), &api.MetaOutput{}
 }
 
-func convertCLICommand(input interface{}) (method, uri string, output interface{}) {
+func convertCLICommand(input interface{}) (method, uri string, output seeker.Output) {
 	in := input.(commands.ConvertInput)
 
 	//Form the request uri
@@ -206,9 +217,21 @@ func convertCLICommand(input interface{}) (method, uri string, output interface{
 	query.Set(api.ConvertSpaceNameKey, in.SpaceName)
 	query.Set(api.ConvertAppNameKey, in.AppName)
 	(*targetFlag).RawQuery = query.Encode()
-	return "GET", (*targetFlag).String(), commands.ConvertOutput{}
+	return "GET", (*targetFlag).String(), &commands.ConvertOutput{}
 }
 
 type noOutput struct {
 	Message string `json:"message,omitempty"`
+}
+
+func (n *noOutput) ReceiveJSON(j []byte) (err error) {
+	err = json.Unmarshal(j, n)
+	return
+}
+
+type mapOutput map[string]interface{}
+
+func (m *mapOutput) ReceiveJSON(j []byte) (err error) {
+	err = json.Unmarshal(j, m)
+	return
 }
