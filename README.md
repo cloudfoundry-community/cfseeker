@@ -81,7 +81,7 @@ Date: Thu, 04 May 2017 15:32:02 GMT
 
 `GET /v1/apps`
 
-#### Supported Arguments
+**Supported Arguments:**
 
 This endpoint requires that either `app_guid` or all three of `org_name`,
 `space_name`, and `app_name` are set.
@@ -146,6 +146,55 @@ Date: Thu, 04 May 2017 18:40:55 GMT
 {
     "meta": {
         "message": "BOSH VM info cache successfully cleared"
+    }
+}
+```
+
+### Convert a GUID to Names or Vice Versa
+
+`GET /v1/convert`
+
+**Supported Arguments:**
+
+When getting information by name, an app name must be qualified by a space name,
+and a space name must be qualified by an organization name.
+You can get information about an app by providing an org, space, and app
+name. You could get info about a space by providing a name for a space
+and org only. Info about an org only requires an org name.
+
+* Option 1
+  * `app_guid`: The GUID of your organization, space, or application
+
+* Option 2
+  * `org_name`: The name of the CF organization your application is pushed to
+  * `space_name`: The name of the CF space your application is pushed to
+  * `app_name`: The name of your CF app, as it was pushed.
+
+* Option 3
+  * `org_name`: The name of the CF organization your space is within
+  * `space_name`: The name of your desired space
+
+* Option 4
+  * `org_name`: The name of your desired organization name
+
+**Example:**
+
+```json
+$ http admin:password@localhost:8892/v1/convert?guid=01234567-89ab-cdef-0123-456789abcdef
+HTTP/1.1 200 OK
+Content-Length: 254
+Content-Type: application/json
+Date: Thu, 27 Jul 2017 16:41:47 GMT
+
+{
+    "contents": {
+        "app_guid": "01234567-89ab-cdef-0123-456789abcdef",
+        "app_name": "cfseeker",
+        "org_guid": "3456789a-bcde-f012-3456-789abcdef012",
+        "org_name": "cfseeker-org",
+        "space_guid": "6789abcd-ef01-2345-6789-abcdef012345",
+        "space_name": "cfseeker-space",
+        "type": "app"
     }
 }
 ```
